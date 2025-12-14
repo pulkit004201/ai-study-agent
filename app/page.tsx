@@ -1,127 +1,71 @@
 "use client";
 
 import { useState } from "react";
-
-const SUGGESTED_TOPICS = [
-  "Large Language Models (LLMs)",
-  "Prompt Engineering",
-  "Retrieval Augmented Generation (RAG)",
-  "AI Agents",
-  "Fine-tuning vs Prompting",
-  "Embeddings & Vector Databases",
-  "Hallucinations in LLMs",
-  "Evaluation of LLMs",
-  "Multi-modal AI",
-  "AI Safety & Guardrails",
-];
+import { useRouter } from "next/navigation";
 
 export default function Home() {
-  const [topic, setTopic] = useState("");
-  const [result, setResult] = useState("");
-  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
 
-  async function learnTopic(selectedTopic?: string) {
-    const finalTopic = selectedTopic || topic;
-    if (!finalTopic.trim()) return;
+  function isValidEmail(value: string) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  }
 
-    setLoading(true);
-    setResult("");
-    setTopic(finalTopic);
+  function handleSubmit() {
+    if (!email.trim()) {
+      setError("Email is required");
+      return;
+    }
 
-    const res = await fetch("/api/agent", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ topic: finalTopic }),
-    });
+    if (!isValidEmail(email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
 
-    const data = await res.json();
-    setResult(data.result || JSON.stringify(data, null, 2));
-    setLoading(false);
+    localStorage.setItem("userEmail", email);
+    localStorage.removeItem("conceptsCompleted"); // reset progress on new login
+    setError("");
+    router.push("/dashboard");
   }
 
   return (
-    <main style={{ padding: 40, maxWidth: 900 }}>
-      <h1>AI Study Agent</h1>
-
-      {/* Suggested Topics */}
-      <h2 style={{ marginTop: 30 }}>Suggested Topics</h2>
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-          gap: 12,
-          marginTop: 12,
-        }}
-      >
-        {SUGGESTED_TOPICS.map((t) => (
-          <button
-            key={t}
-            onClick={() => learnTopic(t)}
-            style={{
-              padding: 14,
-              background: "#111",
-              border: "1px solid #333",
-              borderRadius: 8,
-              color: "#fff",
-              cursor: "pointer",
-              textAlign: "left",
-              lineHeight: 1.4,
-            }}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
-
-      {/* Manual Input */}
-      <h2 style={{ marginTop: 40 }}>Explore Any Topic</h2>
+    <main style={{ padding: 40, maxWidth: 500 }}>
+      <h1>Welcome AI Learner</h1>
+      <p>Learn AI concepts, validate with quizzes, explore real case studies.</p>
 
       <input
-        placeholder="Enter AI topic (e.g. Transformers, RAG evaluation)"
-        value={topic}
-        onChange={(e) => setTopic(e.target.value)}
+        type="email"
+        placeholder="Enter your email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
         style={{
+          marginTop: 20,
           padding: 12,
           width: "100%",
-          marginTop: 12,
           fontSize: 16,
         }}
       />
 
+      {error && (
+        <p style={{ color: "red", marginTop: 8 }}>{error}</p>
+      )}
+
       <button
-        onClick={() => learnTopic()}
-        disabled={loading}
+        onClick={handleSubmit}
         style={{
-          marginTop: 12,
-          padding: "10px 20px",
+          marginTop: 16,
+          padding: "12px 24px",
           fontSize: 16,
           backgroundColor: "#ffffff",
           color: "#000000",
           border: "none",
-          borderRadius: 6,
+          borderRadius: 8,
           cursor: "pointer",
-          opacity: loading ? 0.6 : 1,
         }}
       >
-        {loading ? "Learning..." : "Learn"}
+        Continue →
       </button>
-
-      {/* Result */}
-      {result && (
-        <pre
-          style={{
-            marginTop: 30,
-            padding: 20,
-            background: "#111",
-            borderRadius: 10,
-            whiteSpace: "pre-wrap",
-            lineHeight: 1.6,
-          }}
-        >
-          {result}
-        </pre>
-      )}
     </main>
   );
 }
