@@ -262,7 +262,7 @@ export default function QuizPage() {
 
     setSelected(i);
     setShowAnswer(true);
-    if (i === q.answer) setScore((s) => s + 1);
+    if (i === q.correctIndex) setScore((s) => s + 1);
   }
 
   function nextQuestion() {
@@ -294,7 +294,7 @@ export default function QuizPage() {
   let bg: string = optionBg;
 
   if (showAnswer) {
-    if (i === q.answer) bg = correctBg;
+    if (i === q.correctIndex) bg = correctBg;
     else if (i === selected) bg = wrongBg;
   }
 
