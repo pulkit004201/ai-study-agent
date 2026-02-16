@@ -1,79 +1,111 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 export default function Navbar() {
   const router = useRouter();
+  const pathname = usePathname();
 
-  function handleLogout() {
-    localStorage.removeItem("userEmail");
-    localStorage.removeItem("conceptsCompleted");
-    router.push("/");
-  }
+  const navItems = [
+    { label: "Dashboard", path: "/dashboard" },
+    { label: "Learn", path: "/learn" },
+    { label: "Case Studies", path: "/case-studies" },
+    { label: "Quiz", path: "/quiz" },
+  ];
 
   return (
-    <nav style={navStyle}>
-      {/* Left */}
-      <div style={leftStyle}>
-        <span style={logoStyle}>AI Learn Hub</span>
-
-        <button onClick={() => router.push("/dashboard")} style={linkBtn}>
-          Dashboard
-        </button>
-
-        <button onClick={() => router.push("/learn")} style={linkBtn}>
-          Learn
-        </button>
-
-        <button onClick={() => router.push("/case-studies")} style={linkBtn}>
-          Case Studies
-        </button>
+    <nav style={styles.nav}>
+      {/* Brand */}
+      <div style={styles.brand} >
+        AI Learn Hub
       </div>
 
-      {/* Right */}
-      <button onClick={handleLogout} style={logoutBtn}>
-        Logout
-      </button>
+      {/* Nav buttons */}
+      <div style={styles.menu}>
+        {navItems.map((item) => {
+          const active = pathname === item.path;
+
+          return (
+            <button
+              key={item.path}
+              onClick={() => router.push(item.path)}
+              style={{
+                ...styles.button,
+                ...(active ? styles.activeButton : {}),
+              }}
+            >
+              {item.label}
+            </button>
+          );
+        })}
+
+        {/* Logout */}
+        <button
+          onClick={() => {
+            localStorage.clear();
+            router.push("/");
+          }}
+          style={{ ...styles.button, ...styles.logout }}
+        >
+          Logout
+        </button>
+      </div>
     </nav>
   );
 }
 
-/* -------- Styles -------- */
+/* ---------------- STYLES ---------------- */
 
-const navStyle = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  padding: "14px 32px",
-  borderBottom: "1px solid #222",
-  background: "#000",
-};
+const styles: Record<string, React.CSSProperties> = {
+  nav: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "16px 32px",
+    backgroundColor: "#000",
+    borderBottomWidth: 1,
+    borderBottomStyle: "solid",
+    borderBottomColor: "#1f2937",
+  },
 
-const leftStyle = {
-  display: "flex",
-  alignItems: "center",
-  gap: 16,
-};
+  brand: {
+    fontSize: 20,
+    fontWeight: 800,
+    color: "#fff",
+    cursor: "pointer",
+  },
 
-const logoStyle = {
-  fontWeight: 700,
-  fontSize: 18,
-  marginRight: 20,
-};
+  menu: {
+    display: "flex",
+    gap: 12,
+    alignItems: "center",
+  },
 
-const linkBtn = {
-  background: "transparent",
-  border: "none",
-  color: "#ffffff",
-  fontSize: 14,
-  cursor: "pointer",
-};
+  button: {
+    padding: "8px 16px",
+    borderRadius: 999,
+    backgroundColor: "#111827",
+    color: "#e5e7eb",
+    cursor: "pointer",
+    fontSize: 14,
 
-const logoutBtn = {
-  backgroundColor: "#ef4444",
-  border: "none",
-  color: "#ffffff",
-  padding: "8px 14px",
-  borderRadius: 6,
-  cursor: "pointer",
+    /* 👇 IMPORTANT: no shorthand border */
+    borderWidth: 1,
+    borderStyle: "solid",
+    borderColor: "#1f2937",
+
+    transition: "all 0.2s ease",
+  },
+
+  activeButton: {
+    backgroundColor: "#2563eb",
+    borderColor: "#2563eb",
+    color: "#ffffff",
+  },
+
+  logout: {
+    backgroundColor: "#7f1d1d",
+    borderColor: "#991b1b",
+    color: "#ffffff",
+  },
 };

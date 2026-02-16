@@ -1,155 +1,197 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-
-/* ---------------- TYPES ---------------- */
-
-type Concept = {
-  title: string;
-  explanation: string;
-  analogy: string;
-};
-
-/* ---------------- DATA (50 CONCEPTS) ---------------- */
-
-const ALL_CONCEPTS: Concept[] = [
-  { title: "Artificial Intelligence (AI)", explanation: "AI enables machines to perform tasks that normally require human intelligence.", analogy: "A digital assistant that can think." },
-  { title: "Machine Learning (ML)", explanation: "ML allows systems to learn from data without explicit programming.", analogy: "Learning to ride a bike by practice." },
-  { title: "Deep Learning (DL)", explanation: "Uses neural networks with many layers for complex problems.", analogy: "A brain with multiple thinking layers." },
-  { title: "Supervised Learning", explanation: "Learning using labeled data.", analogy: "Learning with a teacher." },
-  { title: "Unsupervised Learning", explanation: "Finding patterns in unlabeled data.", analogy: "Finding groups in a crowd." },
-
-  { title: "Reinforcement Learning", explanation: "Learning via rewards and penalties.", analogy: "Training a dog with treats." },
-  { title: "Training vs Inference", explanation: "Training teaches models, inference predicts outcomes.", analogy: "Studying vs exam." },
-  { title: "Feature Engineering", explanation: "Transforming raw data into useful inputs.", analogy: "Preparing ingredients before cooking." },
-  { title: "Overfitting", explanation: "Model memorizes training data.", analogy: "Memorizing answers." },
-  { title: "Underfitting", explanation: "Model is too simple to learn patterns.", analogy: "Not studying enough." },
-
-  { title: "Datasets", explanation: "Collections of data for training.", analogy: "Study material." },
-  { title: "Data Labeling", explanation: "Tagging data with correct outputs.", analogy: "Answer key." },
-  { title: "Data Preprocessing", explanation: "Cleaning and preparing data.", analogy: "Washing vegetables." },
-  { title: "Model Architecture", explanation: "Structure of the neural network.", analogy: "Building blueprint." },
-  { title: "Loss Function", explanation: "Measures prediction error.", analogy: "Exam score." },
-
-  { title: "Optimization", explanation: "Improving model performance.", analogy: "Course correction." },
-  { title: "Hyperparameters", explanation: "Model configuration values.", analogy: "Difficulty settings." },
-  { title: "Generalization", explanation: "Performance on unseen data.", analogy: "Applying knowledge in new exams." },
-  { title: "Transfer Learning", explanation: "Using pre-trained models.", analogy: "Using past job experience." },
-  { title: "Model Deployment", explanation: "Putting models into production.", analogy: "Launching a product." },
-
-  { title: "NLP", explanation: "Understanding human language.", analogy: "Teaching computers to read." },
-  { title: "Tokenization", explanation: "Breaking text into tokens.", analogy: "LEGO blocks." },
-  { title: "Embeddings", explanation: "Numeric meaning representations.", analogy: "GPS for words." },
-  { title: "Attention", explanation: "Focusing on important parts of text.", analogy: "Highlighting text." },
-  { title: "Transformers", explanation: "Parallel architecture for language models.", analogy: "Reading a paragraph at once." },
-
-  { title: "LLMs", explanation: "Large models trained on massive text.", analogy: "Advanced autocomplete." },
-  { title: "Prompt Engineering", explanation: "Designing effective prompts.", analogy: "Asking the right question." },
-  { title: "Fine-tuning", explanation: "Specializing models with domain data.", analogy: "Job training." },
-  { title: "Hallucinations", explanation: "Model generating incorrect info.", analogy: "Confident wrong answers." },
-  { title: "Context Window", explanation: "How much text a model remembers.", analogy: "Short-term memory." },
-
-  { title: "Vector Databases", explanation: "Stores embeddings for search.", analogy: "Smart library." },
-  { title: "Similarity Search", explanation: "Finding nearest matches.", analogy: "Finding similar songs." },
-  { title: "RAG", explanation: "Retrieval + generation.", analogy: "Open-book exam." },
-  { title: "AI Agents", explanation: "Autonomous decision-making systems.", analogy: "Digital employees." },
-  { title: "Tool Calling", explanation: "AI using external tools.", analogy: "Using a calculator." },
-
-  { title: "Evaluation Metrics", explanation: "Measuring model quality.", analogy: "Grades." },
-  { title: "A/B Testing", explanation: "Comparing AI versions.", analogy: "Taste testing." },
-  { title: "Explainable AI", explanation: "Understanding AI decisions.", analogy: "Showing your work." },
-  { title: "AI Bias", explanation: "Unfair model behavior.", analogy: "Biased grading." },
-  { title: "Responsible AI", explanation: "Ethical AI usage.", analogy: "Corporate governance." },
-];
-
-/* ---------------- PAGE ---------------- */
-
-const CONCEPTS_PER_PAGE = 5;
+import { CONCEPTS } from "@/data/concepts";
 
 export default function LearnPage() {
   const router = useRouter();
-  const [page, setPage] = useState(0);
+  const [index, setIndex] = useState(0);
+
+  const total = CONCEPTS.length;
+  const concept = CONCEPTS[index];
+  const progress = Math.round(((index + 1) / total) * 100);
 
   useEffect(() => {
-    const email = localStorage.getItem("userEmail");
-    if (!email) router.push("/");
-  }, [router]);
-
-  const totalPages = Math.ceil(ALL_CONCEPTS.length / CONCEPTS_PER_PAGE);
-
-  const visibleConcepts = useMemo(() => {
-    const start = page * CONCEPTS_PER_PAGE;
-    return ALL_CONCEPTS.slice(start, start + CONCEPTS_PER_PAGE);
-  }, [page]);
+    localStorage.setItem("conceptProgress", String(index));
+  }, [index]);
 
   return (
-    <main style={{ padding: 40, maxWidth: 900 }}>
-      <h1>Learn AI Concepts</h1>
-      <p>
-        Concepts {page * CONCEPTS_PER_PAGE + 1}–
-        {Math.min((page + 1) * CONCEPTS_PER_PAGE, ALL_CONCEPTS.length)} of{" "}
-        {ALL_CONCEPTS.length}
-      </p>
-
-      <div style={{ display: "grid", gap: 16, marginTop: 20 }}>
-        {visibleConcepts.map((c) => (
-          <div
-            key={c.title}
-            style={{
-              padding: 20,
-              background: "#111",
-              borderRadius: 10,
-              border: "1px solid #222",
-            }}
-          >
-            <h3>{c.title}</h3>
-            <p>
-              <strong>Explanation:</strong> {c.explanation}
-            </p>
-            <p>
-              <strong>Analogy:</strong> {c.analogy}
-            </p>
-          </div>
-        ))}
+    <main style={page}>
+      {/* Header */}
+      <div style={headerWrap}>
+        <p style={eyebrow}>LEARN · AI FUNDAMENTALS</p>
+        <h1 style={headline}>Learn AI</h1>
       </div>
 
-      {/* Navigation Buttons */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginTop: 30,
-        }}
-      >
+      {/* Progress */}
+      <div style={progressWrap}>
+        <div style={progressTrack}>
+          <div style={{ ...progressFill, width: `${progress}%` }} />
+        </div>
+        <p style={progressText}>
+          {index + 1} / {total} concepts explored
+        </p>
+      </div>
+
+      {/* Concept Card */}
+      <section style={glassCard}>
+        <h2 style={cardTitle}>
+          {index + 1}. {concept.title}
+        </h2>
+
+        <Block label="Explanation">{concept.explanation}</Block>
+        <Block label="Analogy">{concept.analogy}</Block>
+        <Block label="Example">{concept.example}</Block>
+        <Block label="Usage Today">{concept.usage}</Block>
+      </section>
+
+      {/* Navigation */}
+      <div style={nav}>
         <button
-          onClick={() => setPage((p) => p - 1)}
-          disabled={page === 0}
-          style={buttonStyle(page === 0)}
+          style={secondaryBtn}
+          disabled={index === 0}
+          onClick={() => setIndex((i) => i - 1)}
         >
-          Back
+          ← Back
         </button>
 
         <button
-          onClick={() => setPage((p) => p + 1)}
-          disabled={page === totalPages - 1}
-          style={buttonStyle(page === totalPages - 1)}
+          style={primaryBtn}
+          disabled={index === total - 1}
+          onClick={() => setIndex((i) => i + 1)}
         >
-          Next
+          Next →
         </button>
       </div>
     </main>
   );
 }
 
-/* ---------------- STYLES ---------------- */
+/* ---------------- Blocks ---------------- */
 
-const buttonStyle = (disabled: boolean) => ({
-  padding: "10px 20px",
+function Block({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div style={block}>
+      <p style={blockLabel}>{label}</p>
+      <p style={blockText}>{children}</p>
+    </div>
+  );
+}
+
+/* ---------------- Styles ---------------- */
+
+const page = {
+  minHeight: "100vh",
+  padding: "80px 24px",
+  background:
+    "radial-gradient(1200px 600px at 30% -10%, rgba(56,189,248,0.18), transparent 40%), #020617",
+  color: "#e5e7eb",
+};
+
+const headerWrap = {
+  maxWidth: 900,
+  margin: "0 auto 24px",
+};
+
+const eyebrow = {
+  color: "#67e8f9",
+  letterSpacing: "0.14em",
+  fontSize: 12,
+  marginBottom: 10,
+};
+
+const headline = {
+  fontSize: 40,
+  fontWeight: 800,
+};
+
+const progressWrap = {
+  maxWidth: 900,
+  margin: "0 auto 28px",
+};
+
+const progressTrack = {
+  height: 10,
+  borderRadius: 999,
+  background: "rgba(255,255,255,0.08)",
+  overflow: "hidden",
+};
+
+const progressFill = {
+  height: "100%",
+  background: "linear-gradient(90deg, #22c55e, #38bdf8)",
+  transition: "width 0.4s ease",
+};
+
+const progressText = {
+  marginTop: 8,
+  fontSize: 14,
+  opacity: 0.7,
+};
+
+const glassCard = {
+  maxWidth: 900,
+  margin: "0 auto",
+  padding: 28,
+  borderRadius: 20,
+  background:
+    "linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))",
+  backdropFilter: "blur(14px)",
+  border: "1px solid rgba(255,255,255,0.08)",
+  boxShadow: "0 30px 80px rgba(0,0,0,0.6)",
+};
+
+const cardTitle = {
+  fontSize: 24,
+  fontWeight: 700,
+  marginBottom: 18,
+};
+
+const block = {
+  marginBottom: 18,
+};
+
+const blockLabel = {
+  fontSize: 13,
+  letterSpacing: "0.08em",
+  opacity: 0.6,
+  marginBottom: 6,
+};
+
+const blockText = {
   fontSize: 16,
-  borderRadius: 6,
+  lineHeight: 1.65,
+  color: "#e5e7eb",
+};
+
+const nav = {
+  maxWidth: 900,
+  margin: "32px auto 0",
+  display: "flex",
+  justifyContent: "space-between",
+};
+
+const primaryBtn = {
+  padding: "10px 18px",
+  borderRadius: 999,
+  background: "#2563eb",
   border: "none",
-  cursor: disabled ? "not-allowed" : "pointer",
-  backgroundColor: disabled ? "#333" : "#ffffff",
-  color: disabled ? "#777" : "#000",
-});
+  color: "#fff",
+  cursor: "pointer",
+};
+
+const secondaryBtn = {
+  padding: "10px 18px",
+  borderRadius: 999,
+  background: "rgba(255,255,255,0.06)",
+  border: "1px solid rgba(255,255,255,0.12)",
+  color: "#e5e7eb",
+  cursor: "pointer",
+};

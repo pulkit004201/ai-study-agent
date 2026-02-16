@@ -1,181 +1,69 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-
-type CaseStudy = {
-  id: number;
-  company: string;
-  industry: string;
-  problem: string;
-  solution: string;
-  concepts: string[];
-  impact: string;
-  learnings: string;
-  source: string;
-  sourceLabel: string;
-};
-
-const CASE_STUDIES: CaseStudy[] = [
-  {
-    id: 1,
-    company: "Amazon",
-    industry: "E-commerce",
-    problem:
-      "Customers struggled to discover relevant products from millions of SKUs.",
-    solution:
-      "Amazon uses collaborative filtering and deep learning–based recommendation models that analyze user behavior, purchases, and item similarity using embeddings.",
-    concepts: ["Personalization", "Embeddings", "ML"],
-    impact:
-      "Product recommendations contribute to ~35% of Amazon’s total revenue.",
-    learnings:
-      "Personalization at scale directly drives revenue and customer lifetime value.",
-    source: "https://www.aboutamazon.com/news/innovation/how-amazon-personalizes-shopping",
-    sourceLabel: "About Amazon – Personalization",
-  },
-  {
-    id: 2,
-    company: "Netflix",
-    industry: "Media / Streaming",
-    problem:
-      "Users experienced choice overload due to a massive content catalog.",
-    solution:
-      "Netflix uses ML-based ranking systems that personalize content rows and thumbnails using viewing history and engagement signals.",
-    concepts: ["ML", "Ranking Algorithms", "Personalization"],
-    impact:
-      "75–80% of Netflix viewing activity is driven by its recommendation system.",
-    learnings:
-      "Strong personalization significantly reduces churn.",
-    source: "https://netflixtechblog.com/",
-    sourceLabel: "Netflix Tech Blog",
-  },
-  {
-    id: 3,
-    company: "Uber",
-    industry: "Logistics",
-    problem:
-      "Supply-demand imbalance caused longer wait times and inefficient dispatch.",
-    solution:
-      "Uber uses demand forecasting and ML-based dispatch systems to optimize driver positioning and ETAs.",
-    concepts: ["Prediction", "ML", "Optimization"],
-    impact:
-      "Improved ETA accuracy and higher driver utilization across cities.",
-    learnings:
-      "Operational AI improves marketplace efficiency.",
-    source: "https://www.uber.com/en-GB/blog/uber-driving-science/",
-    sourceLabel: "Uber Engineering",
-  },
-  // 👉 keep remaining case studies exactly as you already have (4–10)
-];
+import { CASE_STUDIES } from "@/data/case-studies";
 
 export default function CaseStudiesPage() {
   const router = useRouter();
   const [index, setIndex] = useState(0);
 
-  useEffect(() => {
-    const email = localStorage.getItem("userEmail");
-    if (!email) router.push("/");
-  }, [router]);
-
   const cs = CASE_STUDIES[index];
+  const total = CASE_STUDIES.length;
 
   return (
-    <main style={{ padding: 40, maxWidth: 900 }}>
-      {/* Back to Dashboard */}
-      <button
-        onClick={() => router.push("/dashboard")}
-        style={secondaryBtn}
-      >
-        ← Back to Dashboard
-      </button>
-
-      <h1 style={{ marginTop: 20 }}>AI Case Studies</h1>
-
-      {/* Progress Indicator */}
-      <div style={progressContainer}>
-        {CASE_STUDIES.map((_, i) => (
-          <div
-            key={i}
-            onClick={() => setIndex(i)}
-            style={{
-              ...dot,
-              backgroundColor: i === index ? "#ffffff" : "#444",
-            }}
-            title={`Go to case ${i + 1}`}
-          />
-        ))}
+    <main style={page}>
+      {/* Header */}
+      <div style={headerWrap}>
+        <p style={eyebrow}>PRACTICE · AI CASE STUDIES</p>
+        <h1 style={headline}>Real-world AI product decisions</h1>
+        <p style={subhead}>
+          Understand how leading companies apply AI to solve business problems.
+        </p>
       </div>
 
-      <p style={{ marginTop: 8 }}>
-        Case study {index + 1} of {CASE_STUDIES.length}
+      {/* Progress */}
+      <p style={counter}>
+        Case Study {index + 1} of {total}
       </p>
 
-      {/* Header Card */}
-      <div style={headerCard}>
-        <h2>{cs.company}</h2>
-        <small>{cs.industry}</small>
-      </div>
+      {/* Content Card */}
+      <section style={glassCard}>
+        <Block label="Company / Industry">
+          {cs.company} — {cs.industry}
+        </Block>
 
-      {/* Problem */}
-      <div style={card}>
-        <h3>Problem</h3>
-        <p>{cs.problem}</p>
-      </div>
+        <Block label="Business Problem">{cs.problem}</Block>
 
-      {/* AI Solution */}
-      <div style={card}>
-        <h3>AI Solution</h3>
-        <p>{cs.solution}</p>
+        <Block label="AI Solution">{cs.solution}</Block>
 
-        <div style={{ marginTop: 10 }}>
-          {cs.concepts.map((tag) => (
-            <span key={tag} style={tagStyle}>
-              {tag}
-            </span>
-          ))}
-        </div>
-      </div>
+        <Block label="Impact">{cs.impact}</Block>
 
-      {/* Impact */}
-      <div style={card}>
-        <h3>Impact</h3>
-        <p>{cs.impact}</p>
-      </div>
+        {cs.source && (
+          <a href={cs.source} target="_blank" style={source}>
+            🔗 Source
+          </a>
+        )}
+      </section>
 
-      {/* PM Learning */}
-      <div style={card}>
-        <h3>PM Learning</h3>
-        <p>{cs.learnings}</p>
-      </div>
-
-      {/* Source */}
-      <div style={card}>
-        <a
-          href={cs.source}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ color: "#60a5fa" }}
-        >
-          {cs.sourceLabel} →
-        </a>
-      </div>
-
-      {/* Navigation Buttons */}
-      <div style={{ marginTop: 30, display: "flex", gap: 12 }}>
+      {/* Navigation */}
+      <div style={nav}>
         <button
-          onClick={() => setIndex((i) => Math.max(i - 1, 0))}
+          style={secondaryBtn}
           disabled={index === 0}
-          style={primaryBtn}
+          onClick={() => setIndex((i) => i - 1)}
         >
           ← Back
         </button>
 
+        <button style={ghostBtn} onClick={() => router.push("/dashboard")}>
+          Dashboard
+        </button>
+
         <button
-          onClick={() =>
-            setIndex((i) => Math.min(i + 1, CASE_STUDIES.length - 1))
-          }
-          disabled={index === CASE_STUDIES.length - 1}
           style={primaryBtn}
+          disabled={index === total - 1}
+          onClick={() => setIndex((i) => i + 1)}
         >
           Next →
         </button>
@@ -184,62 +72,127 @@ export default function CaseStudiesPage() {
   );
 }
 
-/* ---------- Styles ---------- */
+/* ---------------- Components ---------------- */
 
-const card = {
-  marginTop: 16,
-  padding: 20,
-  background: "#111",
-  borderRadius: 12,
+function Block({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div style={block}>
+      <p style={blockLabel}>{label}</p>
+      <p style={blockText}>{children}</p>
+    </div>
+  );
+}
+
+/* ---------------- Styles ---------------- */
+
+const page = {
+  minHeight: "100vh",
+  padding: "80px 24px",
+  background:
+    "radial-gradient(1200px 600px at 30% -10%, rgba(56,189,248,0.15), transparent 40%), #020617",
+  color: "#e5e7eb",
 };
 
-const headerCard = {
-  marginTop: 24,
-  padding: 20,
-  background: "#1a1a1a",
-  borderRadius: 14,
+const headerWrap = {
+  maxWidth: 900,
+  margin: "0 auto 40px",
 };
 
-const tagStyle = {
-  display: "inline-block",
-  marginRight: 8,
-  marginTop: 6,
-  padding: "4px 10px",
+const eyebrow = {
+  color: "#67e8f9",
+  letterSpacing: "0.12em",
   fontSize: 12,
-  background: "#333",
-  borderRadius: 999,
+  marginBottom: 10,
+};
+
+const headline = {
+  fontSize: 42,
+  fontWeight: 800,
+  lineHeight: 1.1,
+};
+
+const subhead = {
+  marginTop: 12,
+  maxWidth: 600,
+  opacity: 0.8,
+};
+
+const counter = {
+  maxWidth: 900,
+  margin: "0 auto 12px",
+  opacity: 0.6,
+};
+
+const glassCard = {
+  maxWidth: 900,
+  margin: "0 auto",
+  padding: 28,
+  borderRadius: 20,
+  background:
+    "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))",
+  backdropFilter: "blur(14px)",
+  border: "1px solid rgba(255,255,255,0.08)",
+  boxShadow: "0 30px 80px rgba(0,0,0,0.6)",
+};
+
+const block = {
+  marginBottom: 22,
+};
+
+const blockLabel = {
+  fontSize: 13,
+  letterSpacing: "0.08em",
+  opacity: 0.6,
+  marginBottom: 6,
+};
+
+const blockText = {
+  fontSize: 16,
+  lineHeight: 1.6,
+};
+
+const source = {
+  display: "inline-block",
+  marginTop: 6,
+  color: "#38bdf8",
+  fontSize: 14,
+};
+
+const nav = {
+  maxWidth: 900,
+  margin: "32px auto 0",
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
 };
 
 const primaryBtn = {
-  padding: "12px 24px",
-  fontSize: 16,
-  fontWeight: 600,
-  backgroundColor: "#ffffff",
-  color: "#000000",
+  padding: "10px 18px",
+  borderRadius: 999,
+  background: "#2563eb",
   border: "none",
-  borderRadius: 8,
+  color: "#fff",
   cursor: "pointer",
 };
 
 const secondaryBtn = {
-  padding: "8px 16px",
-  fontSize: 14,
-  backgroundColor: "#2a2a2a",
-  color: "#ffffff",
-  border: "none",
-  borderRadius: 6,
+  padding: "10px 18px",
+  borderRadius: 999,
+  background: "rgba(255,255,255,0.06)",
+  border: "1px solid rgba(255,255,255,0.12)",
+  color: "#e5e7eb",
   cursor: "pointer",
 };
 
-const progressContainer = {
-  display: "flex",
-  gap: 8,
-  marginTop: 16,
-};
-
-const dot = {
-  width: 12,
-  height: 12,
-  borderRadius: "50%",
+const ghostBtn = {
+  background: "transparent",
+  border: "none",
+  color: "#94a3b8",
   cursor: "pointer",
 };

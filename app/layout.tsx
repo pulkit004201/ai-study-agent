@@ -3,7 +3,7 @@ import Navbar from "./components/Navbar";
 
 export const metadata = {
   title: "AI Learn Hub",
-  description: "Learn AI concepts and real-world case studies",
+  description: "Learn AI step by step",
 };
 
 export default function RootLayout({
@@ -13,9 +13,18 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
+      <body
+        style={{
+          margin: 0,
+          backgroundColor: "#000",
+          color: "#fff",
+          fontFamily: "Inter, sans-serif",
+        }}
+      >
+        {/* ✅ NAVBAR IS NOW MOUNTED */}
         <Navbar />
-        <main>{children}</main>
+
+        {children}
       </body>
     </html>
   );
