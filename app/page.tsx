@@ -2,161 +2,87 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import styles from "./page.module.css";
 
 export default function LoginPage() {
   const router = useRouter();
-
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   function handleLogin() {
-    if (!email) return;
+    const normalizedEmail = email.trim();
+    if (!normalizedEmail) {
+      setError("Please enter your email to continue.");
+      return;
+    }
 
-    // mock auth (replace later)
-    localStorage.setItem("userEmail", email);
+    localStorage.setItem("userEmail", normalizedEmail);
     router.push("/dashboard");
   }
 
   return (
-    <main style={page}>
-      {/* Brand */}
-      <header style={brand}>
-      
-      </header>
+    <main className={styles.page}>
+      <div className={styles.backdrop} />
 
-      {/* Login Card */}
-      <section style={card}>
-        <span style={badge}>WELCOME BACK</span>
-
-        <h1 style={headline}>
-          Log in to
-          <br />
-          <span style={accent}>AI LEARN HUB</span>
+      <section className={styles.hero}>
+        <p className={styles.eyebrow}>AI STUDY AGENT</p>
+        <h1 className={styles.title}>
+          Learn AI with
+          <span> structured practice and real-world thinking.</span>
         </h1>
-
-        <p style={subtext}>
-          Continue learning AI concepts designed for real-world execution.
+        <p className={styles.description}>
+          Move from concepts to execution with guided lessons, scenario-based
+          case studies, and fast quiz loops.
         </p>
 
+        <div className={styles.metrics}>
+          <Metric label="Learning tracks" value="4" />
+          <Metric label="Quiz questions" value="20+" />
+          <Metric label="Case studies" value="Curated" />
+        </div>
+      </section>
+
+      <section className={styles.card}>
+        <span className={styles.badge}>WELCOME BACK</span>
+        <h2 className={styles.cardTitle}>Pick up your AI learning journey</h2>
+        <p className={styles.cardText}>
+          Use any email to enter the demo workspace.
+        </p>
+
+        <label className={styles.label} htmlFor="email">
+          Email
+        </label>
         <input
-          style={input}
-          placeholder="Email address"
+          id="email"
+          type="email"
+          className={styles.input}
+          placeholder="you@example.com"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            setError("");
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleLogin();
+          }}
         />
-        <button style={primaryBtn} onClick={handleLogin}>
-          Enter Dashboard →
-        </button>
 
-        <p style={hint}>
-          This is a demo login. No password required.
-        </p>
+        {error && <p className={styles.error}>{error}</p>}
+
+        <button className={styles.primaryBtn} onClick={handleLogin}>
+          Enter Dashboard
+        </button>
+        <p className={styles.hint}>No password required for this demo.</p>
       </section>
     </main>
   );
 }
 
-/* ---------------- Styles ---------------- */
-
-const page = {
-  minHeight: "100vh",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  background:
-    "radial-gradient(circle at top right, #0f766e44, transparent 40%), #020617",
-  color: "#e5e7eb",
-};
-
-const brand = {
-  position: "absolute" as const,
-  top: 30,
-  left: 40,
-  display: "flex",
-  gap: 12,
-  alignItems: "center",
-};
-
-const logo = {
-  width: 36,
-  height: 36,
-  borderRadius: 12,
-  background: "#0f766e",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  fontWeight: 800,
-};
-
-const tagline = {
-  margin: 0,
-  fontSize: 12,
-  opacity: 0.7,
-};
-
-const card = {
-  width: 420,
-  padding: 36,
-  borderRadius: 20,
-  background:
-    "linear-gradient(180deg, rgba(2,6,23,0.9), rgba(2,6,23,0.8))",
-  border: "1px solid #1f2937",
-  boxShadow: "0 40px 80px rgba(0,0,0,0.6)",
-};
-
-const badge = {
-  display: "inline-block",
-  padding: "6px 12px",
-  borderRadius: 999,
-  background: "#0f766e",
-  color: "#99f6e4",
-  fontSize: 11,
-  letterSpacing: 1,
-  marginBottom: 20,
-};
-
-const headline = {
-  fontSize: 32,
-  fontWeight: 800,
-  lineHeight: 1.2,
-};
-
-const accent = {
-  color: "#99f6e4",
-};
-
-const subtext = {
-  marginTop: 12,
-  opacity: 0.75,
-  marginBottom: 24,
-};
-
-const input = {
-  width: "100%",
-  padding: "12px 14px",
-  marginTop: 12,
-  borderRadius: 10,
-  background: "#020617",
-  border: "1px solid #1f2937",
-  color: "#e5e7eb",
-  outline: "none",
-};
-
-const primaryBtn = {
-  width: "100%",
-  marginTop: 20,
-  padding: "12px 16px",
-  borderRadius: 999,
-  background: "#14b8a6",
-  color: "#020617",
-  fontWeight: 700,
-  cursor: "pointer",
-  border: "none",
-};
-
-const hint = {
-  marginTop: 16,
-  fontSize: 12,
-  opacity: 0.6,
-  textAlign: "center" as const,
-};
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className={styles.metric}>
+      <p className={styles.metricValue}>{value}</p>
+      <p className={styles.metricLabel}>{label}</p>
+    </div>
+  );
+}

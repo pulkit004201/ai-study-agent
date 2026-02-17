@@ -23,15 +23,20 @@ Learn AI from first principles to applied use cases with structured concepts, in
         </p>
 
         <div style={ctaRow}>
-          <button style={primaryBtn} onClick={() => router.push("/quiz")}>
-            Quiz Mode →
+          <button
+            style={{ ...ctaCard, ...primaryCard }}
+            onClick={() => router.push("/learn")}
+          >
+            <span style={ctaTitle}>Learn Concepts →</span>
+            <span style={ctaDesc}>Explore fundamentals with structured lessons.</span>
           </button>
         
           <button
-            style={secondaryBtn}
-            onClick={() => router.push("/learn")}
+            style={{ ...ctaCard, ...secondaryCard }}
+            onClick={() => router.push("/quiz")}
           >
-            Learn Concepts →
+            <span style={ctaTitle}>Quiz Mode →</span>
+            <span style={ctaDesc}>Test your understanding with quick rounds.</span>
           </button>
         </div>
       </section>
@@ -107,27 +112,48 @@ const subtext = {
 
 const ctaRow = {
   display: "flex",
-  gap: 14,
+  gap: 18,
+  flexWrap: "wrap" as const,
   marginBottom: 60,
 };
 
-const primaryBtn = {
-  padding: "12px 20px",
-  borderRadius: 999,
-  background: "#14b8a6",
-  color: "#020617",
-  fontWeight: 600,
+const ctaCard = {
+  minWidth: 280,
+  maxWidth: 360,
+  flex: 1,
+  padding: "24px 24px",
+  borderRadius: 18,
+  textAlign: "left" as const,
+  display: "flex",
+  flexDirection: "column" as const,
+  gap: 8,
   cursor: "pointer",
-  border: "none",
+  borderWidth: 1,
+  borderStyle: "solid",
+  transition: "transform 0.2s ease",
 };
 
-const secondaryBtn = {
-  padding: "12px 20px",
-  borderRadius: 999,
-  background: "#020617",
+const primaryCard = {
+  background: "linear-gradient(135deg, #14b8a6, #06b6d4)",
+  borderColor: "#22d3ee",
+  color: "#06202b",
+};
+
+const secondaryCard = {
+  background: "linear-gradient(180deg, #020617, #0b1730)",
+  borderColor: "#1e3a8a",
   color: "#e5e7eb",
-  border: "1px solid #1f2937",
-  cursor: "pointer",
+};
+
+const ctaTitle = {
+  fontSize: 32,
+  fontWeight: 700,
+  lineHeight: 1.1,
+};
+
+const ctaDesc = {
+  fontSize: 16,
+  opacity: 0.8,
 };
 
 const cardGrid = {

@@ -1,5 +1,11 @@
 import "./globals.css";
 import Navbar from "./components/Navbar";
+import { Lexend } from "next/font/google";
+
+const lexend = Lexend({
+  subsets: ["latin"],
+  variable: "--font-lexend",
+});
 
 export const metadata = {
   title: "AI Learn Hub",
@@ -14,11 +20,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
+        className={lexend.className}
         style={{
           margin: 0,
           backgroundColor: "#000",
           color: "#fff",
-          fontFamily: "Inter, sans-serif",
         }}
       >
         {/* ✅ NAVBAR IS NOW MOUNTED */}

@@ -1,0 +1,225 @@
+.page {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 460px);
+  gap: 56px;
+  padding: 72px clamp(20px, 6vw, 84px);
+  align-items: center;
+  overflow: hidden;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(600px 340px at 8% 10%, rgba(56, 189, 248, 0.2), transparent 52%),
+    radial-gradient(680px 380px at 92% 84%, rgba(34, 197, 94, 0.16), transparent 56%),
+    linear-gradient(180deg, #020617 0%, #01030a 100%);
+}
+
+.hero,
+.card {
+  position: relative;
+  z-index: 1;
+}
+
+.eyebrow {
+  margin: 0 0 18px;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: #67e8f9;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(1.7rem, 3.8vw, 3rem);
+  line-height: 1.1;
+  font-weight: 800;
+  color: #f8fafc;
+  max-width: 640px;
+}
+
+.title span {
+  color: #99f6e4;
+}
+
+.description {
+  margin: 18px 0 28px;
+  max-width: 620px;
+  color: #cbd5e1;
+  line-height: 1.7;
+  font-size: clamp(0.96rem, 1.5vw, 1.08rem);
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(110px, 1fr));
+  gap: 12px;
+  max-width: 640px;
+}
+
+.metric {
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.65);
+  padding: 14px;
+}
+
+.metricValue {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.metricLabel {
+  margin: 6px 0 0;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.card {
+  width: 100%;
+  border: 1px solid rgba(125, 211, 252, 0.28);
+  background: linear-gradient(180deg, rgba(6, 12, 32, 0.96), rgba(10, 20, 44, 0.86));
+  border-radius: 20px;
+  box-shadow:
+    0 34px 70px rgba(0, 0, 0, 0.52),
+    0 0 0 1px rgba(125, 211, 252, 0.08) inset,
+    0 0 46px rgba(34, 211, 238, 0.1);
+  padding: 30px;
+}
+
+.badge {
+  display: inline-block;
+  border-radius: 999px;
+  background: rgba(20, 184, 166, 0.22);
+  color: #99f6e4;
+  letter-spacing: 0.1em;
+  font-size: 11px;
+  padding: 6px 12px;
+}
+
+.cardTitle {
+  margin: 14px 0 8px;
+  font-size: 1.65rem;
+  color: #f8fafc;
+}
+
+.cardText {
+  margin: 0 0 22px;
+  color: #94a3b8;
+}
+
+.label {
+  display: block;
+  font-size: 0.86rem;
+  color: #cbd5e1;
+  margin-bottom: 8px;
+}
+
+.input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #334155;
+  background: #020617;
+  color: #e2e8f0;
+  outline: none;
+}
+
+.input:focus {
+  border-color: #22d3ee;
+  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.18);
+}
+
+.error {
+  margin: 8px 0 0;
+  color: #fda4af;
+  font-size: 0.84rem;
+}
+
+.primaryBtn {
+  width: 100%;
+  margin-top: 18px;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #14b8a6, #06b6d4);
+  color: #06202b;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.primaryBtn:hover {
+  filter: brightness(1.05);
+}
+
+.hint {
+  margin: 12px 0 0;
+  text-align: center;
+  font-size: 12px;
+  color: #64748b;
+}
+
+@media (max-width: 960px) {
+  .page {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding: 38px 18px 30px;
+  }
+
+  .card {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .title {
+    font-size: 1.95rem;
+  }
+
+  .description {
+    margin-top: 14px;
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+
+  .metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .metric {
+    padding: 10px;
+    border-radius: 10px;
+  }
+
+  .metricValue {
+    font-size: 1rem;
+  }
+
+  .metricLabel {
+    margin-top: 4px;
+    font-size: 0.72rem;
+  }
+
+  .card {
+    padding: 24px;
+  }
+
+  .cardTitle {
+    font-size: 1.35rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
