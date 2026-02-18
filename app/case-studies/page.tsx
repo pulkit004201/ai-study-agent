@@ -7,9 +7,27 @@ import { CASE_STUDIES } from "@/data/case-studies";
 export default function CaseStudiesPage() {
   const router = useRouter();
   const [index, setIndex] = useState(0);
+  const [selectedIndustry, setSelectedIndustry] = useState("All Industries");
+  const [isIndustryMenuOpen, setIndustryMenuOpen] = useState(false);
 
-  const cs = CASE_STUDIES[index];
-  const total = CASE_STUDIES.length;
+  const industries = [
+    "All Industries",
+    ...Array.from(new Set(CASE_STUDIES.map((item) => item.industry))),
+  ];
+
+  const filteredCaseStudies =
+    selectedIndustry === "All Industries"
+      ? CASE_STUDIES
+      : CASE_STUDIES.filter((item) => item.industry === selectedIndustry);
+
+  const total = filteredCaseStudies.length;
+  const safeIndex = index >= total ? 0 : index;
+  const cs = filteredCaseStudies[safeIndex];
+
+  if (!cs) return null;
+
+  const detailedProblem = buildDetailedProblem(cs.company, cs.problem);
+  const detailedSolution = buildDetailedSolution(cs.company, cs.solution);
 
   return (
     <main style={page}>
@@ -23,8 +41,42 @@ export default function CaseStudiesPage() {
       </div>
 
       {/* Progress */}
+      <div style={industryWrap}>
+        <p style={industryLabel}>Select Industry</p>
+        <button
+          type="button"
+          style={industryTrigger}
+          onClick={() => setIndustryMenuOpen((open) => !open)}
+        >
+          <span>{selectedIndustry}</span>
+          <span>{isIndustryMenuOpen ? "▲" : "▼"}</span>
+        </button>
+
+        {isIndustryMenuOpen && (
+          <div style={industryMenu}>
+            {industries.map((industry) => {
+              const active = selectedIndustry === industry;
+              return (
+                <button
+                  key={industry}
+                  type="button"
+                  style={active ? { ...industryItem, ...industryItemActive } : industryItem}
+                  onClick={() => {
+                    setSelectedIndustry(industry);
+                    setIndex(0);
+                    setIndustryMenuOpen(false);
+                  }}
+                >
+                  {industry}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
       <p style={counter}>
-        Case Study {index + 1} of {total}
+        Case Study {safeIndex + 1} of {total}
       </p>
 
       {/* Content Card */}
@@ -33,9 +85,9 @@ export default function CaseStudiesPage() {
           {cs.company} — {cs.industry}
         </Block>
 
-        <Block label="Business Problem">{cs.problem}</Block>
+        <Block label="Business Problem">{detailedProblem}</Block>
 
-        <Block label="AI Solution">{cs.solution}</Block>
+        <Block label="AI Solution">{detailedSolution}</Block>
 
         <Block label="Impact">{cs.impact}</Block>
 
@@ -50,8 +102,8 @@ export default function CaseStudiesPage() {
       <div style={nav}>
         <button
           style={secondaryBtn}
-          disabled={index === 0}
-          onClick={() => setIndex((i) => i - 1)}
+          disabled={safeIndex === 0}
+          onClick={() => setIndex(safeIndex - 1)}
         >
           ← Back
         </button>
@@ -62,14 +114,26 @@ export default function CaseStudiesPage() {
 
         <button
           style={primaryBtn}
-          disabled={index === total - 1}
-          onClick={() => setIndex((i) => i + 1)}
+          disabled={safeIndex === total - 1}
+          onClick={() => setIndex(safeIndex + 1)}
         >
           Next →
         </button>
       </div>
     </main>
   );
+}
+
+function buildDetailedProblem(company: string, problem: string) {
+  return `${company} was facing a core product and business challenge: ${problem} 
+This was not just a model-quality issue; it directly affected user trust, conversion, retention, and operating efficiency. 
+If the team did not solve this, the product risked weaker engagement loops, slower growth, and higher cost-to-serve over time.`;
+}
+
+function buildDetailedSolution(company: string, solution: string) {
+  return `The product team approached this as a structured PM initiative: ${solution} 
+Execution-wise, they defined success metrics first, aligned data, engineering, and domain teams, and rolled out the capability in controlled phases with experimentation. 
+They also implemented monitoring and feedback loops so model behavior could be improved continuously after launch, ensuring the solution stayed reliable as user behavior and business context evolved.`;
 }
 
 /* ---------------- Components ---------------- */
@@ -127,6 +191,62 @@ const counter = {
   maxWidth: 900,
   margin: "0 auto 12px",
   opacity: 0.6,
+};
+
+const industryWrap = {
+  maxWidth: 900,
+  margin: "0 auto 12px",
+  position: "relative" as const,
+};
+
+const industryLabel = {
+  margin: "0 0 6px",
+  fontSize: 12,
+  color: "#67e8f9",
+  textTransform: "uppercase" as const,
+  letterSpacing: "0.08em",
+};
+
+const industryTrigger = {
+  width: "100%",
+  maxWidth: 460,
+  padding: "10px 12px",
+  borderRadius: 12,
+  border: "1px solid rgba(255,255,255,0.18)",
+  background: "#08152f",
+  color: "#e5e7eb",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  cursor: "pointer",
+  textAlign: "left" as const,
+};
+
+const industryMenu = {
+  position: "absolute" as const,
+  top: 64,
+  width: "100%",
+  maxWidth: 460,
+  maxHeight: 420, // roughly 10 options visible, then scroll
+  overflowY: "auto" as const,
+  borderRadius: 12,
+  border: "1px solid rgba(255,255,255,0.18)",
+  background: "#08152f",
+  zIndex: 20,
+};
+
+const industryItem = {
+  width: "100%",
+  padding: "10px 12px",
+  border: "none",
+  textAlign: "left" as const,
+  background: "transparent",
+  color: "#e5e7eb",
+  cursor: "pointer",
+};
+
+const industryItemActive = {
+  background: "rgba(37,99,235,0.3)",
 };
 
 const glassCard = {

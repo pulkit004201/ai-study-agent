@@ -6,245 +6,450 @@ export type QuizQuestion = {
   explanation: string;
 };
 
-export const QUIZ_QUESTIONS: QuizQuestion[] = [
+export type QuizDifficulty = "easy" | "medium" | "hard";
+
+export const QUIZ_LABELS: Record<QuizDifficulty, string> = {
+  easy: "Easy",
+  medium: "Medium",
+  hard: "Hard",
+};
+
+const EASY_QUESTIONS: QuizQuestion[] = [
   {
     id: 1,
     question: "What does Artificial Intelligence primarily aim to simulate?",
-    options: [
-      "Human emotions",
-      "Human intelligence",
-      "Human appearance",
-      "Human language only"
-    ],
+    options: ["Human emotions", "Human intelligence", "Human appearance", "Human language only"],
     correctIndex: 1,
-    explanation: "AI focuses on simulating human intelligence such as learning, reasoning, and decision-making."
+    explanation: "AI mainly simulates human-like intelligence such as reasoning and decision-making.",
   },
   {
     id: 2,
     question: "Which of the following is an example of Narrow AI?",
-    options: [
-      "Self-aware robot",
-      "Google Search",
-      "Human brain",
-      "General problem-solving AI"
-    ],
+    options: ["Self-aware robot", "Google Search", "Human brain", "General problem-solving AI"],
     correctIndex: 1,
-    explanation: "Google Search performs a specific task and is a classic example of Narrow AI."
+    explanation: "Google Search is built for specific tasks, which makes it Narrow AI.",
   },
   {
     id: 3,
     question: "What is Machine Learning?",
-    options: [
-      "Programming machines manually",
-      "Machines learning from data",
-      "Machines replacing humans",
-      "Machines using hardware acceleration"
-    ],
+    options: ["Programming every rule manually", "Machines learning from data", "Machines replacing humans", "Machines using only hardware"],
     correctIndex: 1,
-    explanation: "Machine Learning allows systems to learn patterns from data without being explicitly programmed."
+    explanation: "ML enables systems to learn patterns directly from data.",
   },
   {
     id: 4,
-    question: "Which algorithm type learns using labeled data?",
-    options: [
-      "Unsupervised learning",
-      "Reinforcement learning",
-      "Supervised learning",
-      "Clustering"
-    ],
+    question: "Which learning method uses labeled data?",
+    options: ["Unsupervised learning", "Reinforcement learning", "Supervised learning", "Clustering"],
     correctIndex: 2,
-    explanation: "Supervised learning uses labeled datasets to train models."
+    explanation: "Supervised learning uses input-output labeled examples.",
   },
   {
     id: 5,
-    question: "What is Deep Learning based on?",
-    options: [
-      "Decision trees",
-      "Rule engines",
-      "Neural networks",
-      "Databases"
-    ],
+    question: "Deep learning is primarily based on:",
+    options: ["Rule engines", "Decision tables", "Neural networks", "Relational databases"],
     correctIndex: 2,
-    explanation: "Deep Learning uses multi-layered neural networks inspired by the human brain."
+    explanation: "Deep learning uses multi-layer neural networks.",
   },
   {
     id: 6,
-    question: "Which component allows a neural network to learn?",
-    options: [
-      "Activation function",
-      "Loss function",
-      "Weights update",
-      "All of the above"
-    ],
-    correctIndex: 3,
-    explanation: "Learning occurs through loss calculation, activation functions, and weight updates."
+    question: "NLP stands for:",
+    options: ["Neural Logic Processing", "Natural Language Processing", "Network Learning Protocol", "Numeric Language Prediction"],
+    correctIndex: 1,
+    explanation: "NLP is the area focused on understanding and generating human language.",
   },
   {
     id: 7,
-    question: "What is Natural Language Processing (NLP) used for?",
-    options: [
-      "Image recognition",
-      "Speech generation",
-      "Understanding human language",
-      "Robotics control"
-    ],
-    correctIndex: 2,
-    explanation: "NLP helps machines understand, interpret, and generate human language."
+    question: "Which is a common NLP application?",
+    options: ["Spam detection", "Face unlock", "Autonomous steering", "3D rendering"],
+    correctIndex: 0,
+    explanation: "Spam detection classifies text emails and is a common NLP use case.",
   },
   {
     id: 8,
-    question: "Which is a common NLP application?",
-    options: [
-      "Spam detection",
-      "Face recognition",
-      "Autonomous driving",
-      "Game physics"
-    ],
+    question: "A recommendation system mostly uses:",
+    options: ["User preferences and behavior", "Random selection", "CPU frequency", "Manual tagging only"],
     correctIndex: 0,
-    explanation: "Spam detection uses NLP to analyze email text."
+    explanation: "Recommendations are usually learned from user behavior patterns.",
   },
   {
     id: 9,
-    question: "What does a recommendation system primarily use?",
-    options: [
-      "User preferences",
-      "Random selection",
-      "Hardware speed",
-      "Manual tagging only"
-    ],
-    correctIndex: 0,
-    explanation: "Recommendation systems analyze user behavior and preferences."
+    question: "Reinforcement learning is based on:",
+    options: ["Labeled pairs", "Reward and penalty", "Static hand rules", "No feedback"],
+    correctIndex: 1,
+    explanation: "RL agents learn by maximizing rewards over time.",
   },
   {
     id: 10,
-    question: "What is Reinforcement Learning based on?",
-    options: [
-      "Labeled datasets",
-      "Punishment and reward",
-      "Static rules",
-      "Human supervision"
-    ],
-    correctIndex: 1,
-    explanation: "Reinforcement learning trains agents using rewards and penalties."
+    question: "Which model is widely used for image recognition?",
+    options: ["CNN", "RNN", "Linear regression", "Naive Bayes"],
+    correctIndex: 0,
+    explanation: "CNNs are designed for visual pattern extraction in images.",
   },
   {
     id: 11,
-    question: "Which AI model is commonly used for image recognition?",
-    options: [
-      "CNN",
-      "RNN",
-      "Linear Regression",
-      "Naive Bayes"
-    ],
-    correctIndex: 0,
-    explanation: "Convolutional Neural Networks (CNNs) are designed for image processing."
+    question: "What does overfitting mean?",
+    options: ["Good performance on all data", "Memorizing training data too closely", "Using too little memory", "Model running slower"],
+    correctIndex: 1,
+    explanation: "Overfitting hurts generalization on unseen data.",
   },
   {
     id: 12,
-    question: "What does overfitting mean?",
-    options: [
-      "Model performs well on new data",
-      "Model memorizes training data",
-      "Model has too little data",
-      "Model runs slowly"
-    ],
+    question: "Which helps reduce overfitting?",
+    options: ["Ignoring validation", "Regularization", "Smaller datasets", "More noise in labels"],
     correctIndex: 1,
-    explanation: "Overfitting happens when a model memorizes training data and fails to generalize."
+    explanation: "Regularization limits model complexity and improves generalization.",
   },
   {
     id: 13,
-    question: "What helps prevent overfitting?",
-    options: [
-      "More parameters",
-      "Regularization",
-      "Less data",
-      "Removing validation"
-    ],
+    question: "A chatbot is mainly an example of:",
+    options: ["Computer vision", "NLP application", "Robotics control", "Signal processing"],
     correctIndex: 1,
-    explanation: "Regularization techniques reduce overfitting by constraining model complexity."
+    explanation: "Chatbots rely heavily on language understanding and generation.",
   },
   {
     id: 14,
-    question: "Which metric measures classification accuracy?",
-    options: [
-      "MSE",
-      "Precision",
-      "Loss",
-      "Gradient"
-    ],
+    question: "Who introduced the Transformer architecture?",
+    options: ["Meta", "Google", "Netflix", "OpenCV community"],
     correctIndex: 1,
-    explanation: "Precision measures how many predicted positives are actually correct."
+    explanation: "Google researchers introduced Transformers in 2017.",
   },
   {
     id: 15,
-    question: "What is a chatbot an example of?",
-    options: [
-      "Computer Vision",
-      "NLP application",
-      "Robotics",
-      "Hardware automation"
-    ],
+    question: "Fine-tuning means:",
+    options: ["Training from zero only", "Adapting a pretrained model", "Removing all layers", "Using larger GPUs only"],
     correctIndex: 1,
-    explanation: "Chatbots use NLP to communicate with users."
+    explanation: "Fine-tuning customizes pretrained models for specific tasks.",
   },
   {
     id: 16,
-    question: "Which company popularized Transformers?",
-    options: [
-      "Meta",
-      "Google",
-      "Amazon",
-      "Netflix"
-    ],
+    question: "RAG stands for:",
+    options: ["Random AI Graph", "Retrieval Augmented Generation", "Recursive Agent Grid", "Realtime Assist Generation"],
     correctIndex: 1,
-    explanation: "Google introduced Transformers in the paper 'Attention Is All You Need'."
+    explanation: "RAG combines retrieval with generation to improve factual grounding.",
   },
   {
     id: 17,
-    question: "What is fine-tuning?",
-    options: [
-      "Training from scratch",
-      "Adjusting a pretrained model",
-      "Removing layers",
-      "Changing hardware"
-    ],
-    correctIndex: 1,
-    explanation: "Fine-tuning adapts a pretrained model to a specific task."
+    question: "Which is an ethical concern in AI?",
+    options: ["Bias", "Caching", "Code formatting", "Clock speed"],
+    correctIndex: 0,
+    explanation: "Bias can produce unfair and harmful outcomes.",
   },
   {
     id: 18,
-    question: "What does RAG stand for?",
-    options: [
-      "Random AI Generator",
-      "Retrieval Augmented Generation",
-      "Recursive AI Graph",
-      "Real-time AI Generator"
-    ],
-    correctIndex: 1,
-    explanation: "RAG combines retrieval with generation for better responses."
+    question: "Main goal of Explainable AI is to:",
+    options: ["Speed up training", "Reduce cloud cost", "Make model decisions understandable", "Remove all uncertainty"],
+    correctIndex: 2,
+    explanation: "Explainability improves trust and transparency.",
   },
   {
     id: 19,
-    question: "Which is an ethical concern in AI?",
-    options: [
-      "Bias",
-      "Speed",
-      "Scalability",
-      "Caching"
-    ],
-    correctIndex: 0,
-    explanation: "Bias can lead to unfair or harmful AI outcomes."
+    question: "Embeddings are used to:",
+    options: ["Store images as raw pixels", "Represent meaning as vectors", "Increase RAM usage", "Compile model code"],
+    correctIndex: 1,
+    explanation: "Embeddings convert text/items into semantic vectors.",
   },
   {
     id: 20,
-    question: "What is the main goal of Explainable AI (XAI)?",
+    question: "What is the role of inference in AI?",
+    options: ["Model training", "Dataset labeling", "Generating predictions from trained models", "Hardware procurement"],
+    correctIndex: 2,
+    explanation: "Inference is when trained models produce outputs on new inputs.",
+  },
+];
+
+const MEDIUM_QUESTIONS: QuizQuestion[] = [
+  {
+    id: 1,
+    question: "Which statement best describes the bias-variance tradeoff?",
     options: [
-      "Make AI faster",
-      "Reduce cost",
-      "Make AI decisions understandable",
-      "Automate training"
+      "Low bias and low variance are always impossible together",
+      "Bias controls optimization speed only",
+      "Too-simple models underfit and too-complex models overfit",
+      "Variance is unrelated to data size",
     ],
     correctIndex: 2,
-    explanation: "XAI focuses on transparency and interpretability of AI decisions."
-  }
+    explanation: "Bias-variance tradeoff captures the balance between underfitting and overfitting.",
+  },
+  {
+    id: 2,
+    question: "In classification, precision measures:",
+    options: ["True positives among predicted positives", "True positives among all actual positives", "Total correct over all predictions", "False positives over true positives"],
+    correctIndex: 0,
+    explanation: "Precision = TP / (TP + FP).",
+  },
+  {
+    id: 3,
+    question: "Why are embeddings useful in semantic search?",
+    options: ["They reduce text to ASCII", "They map meaning to geometric proximity", "They eliminate indexing", "They force exact keyword match"],
+    correctIndex: 1,
+    explanation: "Semantic similarity can be measured by vector distance in embedding space.",
+  },
+  {
+    id: 4,
+    question: "Which model is generally better for long text dependencies?",
+    options: ["RNN without attention", "Bag-of-words", "Transformer", "k-NN on raw text"],
+    correctIndex: 2,
+    explanation: "Transformers use attention to model long-range token relationships.",
+  },
+  {
+    id: 5,
+    question: "What is a key purpose of a validation set?",
+    options: ["Final benchmarking only", "Hyperparameter tuning and model selection", "Data storage compression", "Removing outliers manually"],
+    correctIndex: 1,
+    explanation: "Validation data helps tune model settings without using test data.",
+  },
+  {
+    id: 6,
+    question: "Which of the following is true about transfer learning?",
+    options: ["Always trains from scratch", "Reuses learned representations from related tasks", "Needs more data than baseline", "Cannot be used in vision"],
+    correctIndex: 1,
+    explanation: "Transfer learning leverages pretrained knowledge.",
+  },
+  {
+    id: 7,
+    question: "In RAG systems, retrieval primarily improves:",
+    options: ["GPU utilization", "Factual grounding", "Tokenization speed", "UI rendering"],
+    correctIndex: 1,
+    explanation: "Retrieved context helps generation remain grounded in real documents.",
+  },
+  {
+    id: 8,
+    question: "What does cosine similarity measure between two vectors?",
+    options: ["Difference in lengths only", "Angular similarity", "Euclidean distance only", "Variance across batches"],
+    correctIndex: 1,
+    explanation: "Cosine similarity captures the angle between vectors.",
+  },
+  {
+    id: 9,
+    question: "Data leakage most directly causes:",
+    options: ["Lower training accuracy", "Overly optimistic evaluation", "Smaller model size", "Reduced feature importance"],
+    correctIndex: 1,
+    explanation: "Leakage introduces future or target information into training/evaluation.",
+  },
+  {
+    id: 10,
+    question: "Which is a common class-imbalance mitigation technique?",
+    options: ["Ignoring minority class", "Stratified sampling", "Deleting true negatives", "Reducing all features"],
+    correctIndex: 1,
+    explanation: "Stratification and balanced sampling help fair training/evaluation.",
+  },
+  {
+    id: 11,
+    question: "What does regularization typically do?",
+    options: ["Adds model complexity", "Penalizes overly large weights", "Removes training objective", "Disables validation"],
+    correctIndex: 1,
+    explanation: "Regularization constrains parameters to improve generalization.",
+  },
+  {
+    id: 12,
+    question: "Masked self-attention in decoders is used to:",
+    options: ["Attend only to image tokens", "Prevent access to future tokens", "Increase hidden size", "Skip normalization"],
+    correctIndex: 1,
+    explanation: "Masking preserves autoregressive generation.",
+  },
+  {
+    id: 13,
+    question: "Which statement about PCA is correct?",
+    options: ["It is a nonlinear manifold method", "It projects onto principal variance directions", "It requires labels", "It only works for text"],
+    correctIndex: 1,
+    explanation: "PCA linearly projects data to maximize variance capture.",
+  },
+  {
+    id: 14,
+    question: "When would F1 score be preferred over accuracy?",
+    options: ["Balanced classes", "Noisy labels only", "Imbalanced class problems", "Regression tasks"],
+    correctIndex: 2,
+    explanation: "F1 balances precision and recall for imbalanced classes.",
+  },
+  {
+    id: 15,
+    question: "Fine-tuning an LLM usually updates:",
+    options: ["Only tokenizer vocabulary", "Model weights for target behavior", "Only input prompts", "Only retrieval index"],
+    correctIndex: 1,
+    explanation: "Fine-tuning adjusts parameters to align outputs with domain tasks.",
+  },
+  {
+    id: 16,
+    question: "Which component in transformers learns token relationships?",
+    options: ["Convolution only", "Attention mechanism", "Dropout layer only", "Batch scheduler"],
+    correctIndex: 1,
+    explanation: "Attention explicitly models pairwise token relevance.",
+  },
+  {
+    id: 17,
+    question: "Hallucination in LLM output means:",
+    options: ["Text generation delay", "Confident but fabricated content", "Token truncation", "Input parsing failure"],
+    correctIndex: 1,
+    explanation: "Hallucination is plausible-sounding but unsupported output.",
+  },
+  {
+    id: 18,
+    question: "Which retrieval method is most common in vector DBs?",
+    options: ["Exact SQL joins", "Nearest-neighbor search", "Hash table lookup only", "Deterministic grammar parse"],
+    correctIndex: 1,
+    explanation: "Vector DBs optimize nearest-neighbor retrieval in high-dimensional space.",
+  },
+  {
+    id: 19,
+    question: "In supervised learning, the test set should be used for:",
+    options: ["Feature engineering decisions", "Final unbiased evaluation", "Hyperparameter search", "Model warm-up"],
+    correctIndex: 1,
+    explanation: "Use the test set once for final performance estimation.",
+  },
+  {
+    id: 20,
+    question: "Which approach best reduces prompt ambiguity?",
+    options: ["Shorter prompts always", "Adding explicit constraints and output schema", "Removing examples", "Using random temperature"],
+    correctIndex: 1,
+    explanation: "Structured prompts reduce variance and improve consistency.",
+  },
 ];
+
+const HARD_QUESTIONS: QuizQuestion[] = [
+  {
+    id: 1,
+    question: "In a production RAG pipeline, which metric pair is most diagnostic?",
+    options: ["Latency and BLEU only", "Retrieval recall@k and grounded answer accuracy", "GPU memory and token count", "Prompt length and cache hits"],
+    correctIndex: 1,
+    explanation: "RAG quality depends on both retrieval relevance and answer grounding.",
+  },
+  {
+    id: 2,
+    question: "Why can high training accuracy with low validation accuracy occur?",
+    options: ["Underfitting due to too little capacity", "Overfitting to training distribution", "Too much regularization always", "Insufficient logging"],
+    correctIndex: 1,
+    explanation: "This pattern usually indicates overfitting and weak generalization.",
+  },
+  {
+    id: 3,
+    question: "Which token-level mechanism enables contextual mixing in transformers?",
+    options: ["Static embeddings only", "Self-attention with query-key-value projections", "Convolution stride tuning", "Batch normalization only"],
+    correctIndex: 1,
+    explanation: "QKV attention dynamically mixes token information by relevance.",
+  },
+  {
+    id: 4,
+    question: "A major risk when evaluating LLM apps on synthetic test sets is:",
+    options: ["Slow compilation", "Distribution mismatch with real user traffic", "Excessive gradient noise", "Tokenizer corruption"],
+    correctIndex: 1,
+    explanation: "Synthetic data often fails to represent true production complexity.",
+  },
+  {
+    id: 5,
+    question: "What does calibration in probabilistic models refer to?",
+    options: ["Model size reduction", "Confidence matching empirical correctness", "Faster decoding", "Lower FLOPs"],
+    correctIndex: 1,
+    explanation: "A calibrated model's probabilities align with observed frequencies.",
+  },
+  {
+    id: 6,
+    question: "Which strategy best mitigates catastrophic forgetting during domain adaptation?",
+    options: ["Single-epoch full fine-tuning", "Mixing base-task data or using parameter-efficient tuning", "Removing pretrained layers", "Increasing sequence length only"],
+    correctIndex: 1,
+    explanation: "Data mixing and PEFT methods preserve prior capabilities better.",
+  },
+  {
+    id: 7,
+    question: "In embedding retrieval, why might cosine and dot-product rankings differ?",
+    options: ["Cosine ignores direction", "Dot-product is sensitive to vector magnitude", "Cosine uses labels", "Dot-product removes angle information"],
+    correctIndex: 1,
+    explanation: "Cosine normalizes vectors while dot-product includes length effects.",
+  },
+  {
+    id: 8,
+    question: "Which is the most robust way to assess prompt-template quality?",
+    options: ["One-shot manual inspection", "A/B evaluation over representative benchmark slices", "Only latency testing", "Randomly sampling one question"],
+    correctIndex: 1,
+    explanation: "Prompt quality should be measured across realistic and segmented datasets.",
+  },
+  {
+    id: 9,
+    question: "What is the core reason label leakage inflates model metrics?",
+    options: ["Larger learning rate", "Model indirectly sees target information during training", "Token truncation", "Insufficient augmentation"],
+    correctIndex: 1,
+    explanation: "Leakage makes the task unrealistically easy during evaluation.",
+  },
+  {
+    id: 10,
+    question: "Which failure mode is most associated with long-context generation?",
+    options: ["Kernel panic", "Context dilution and attention spread", "Batch underflow", "Optimizer divergence at inference"],
+    correctIndex: 1,
+    explanation: "As context grows, relevant tokens can become harder to prioritize.",
+  },
+  {
+    id: 11,
+    question: "For imbalanced binary classification, which thresholding approach is better?",
+    options: ["Always 0.5", "Tune threshold on validation objective (e.g., F1/cost)", "Always 0.9", "Always 0.1"],
+    correctIndex: 1,
+    explanation: "Decision thresholds should align with task utility and class imbalance.",
+  },
+  {
+    id: 12,
+    question: "Why are confidence intervals useful in model evaluation?",
+    options: ["They remove sampling bias", "They quantify uncertainty in metric estimates", "They increase accuracy", "They replace test sets"],
+    correctIndex: 1,
+    explanation: "Intervals communicate expected variability, not just point estimates.",
+  },
+  {
+    id: 13,
+    question: "What is a key tradeoff in retrieval chunk size?",
+    options: ["Smaller chunks always improve grounding", "Larger chunks always improve precision", "Chunk size affects recall, precision, and context noise", "Chunk size only impacts latency"],
+    correctIndex: 2,
+    explanation: "Chunk granularity changes retrieval relevance and answer quality.",
+  },
+  {
+    id: 14,
+    question: "Parameter-efficient fine-tuning (PEFT) is mainly valuable because it:",
+    options: ["Eliminates need for validation", "Reduces trainable parameters and infrastructure cost", "Guarantees no hallucinations", "Requires no base model"],
+    correctIndex: 1,
+    explanation: "PEFT methods adapt models efficiently with fewer updated weights.",
+  },
+  {
+    id: 15,
+    question: "Which evaluation setup best catches regression in multi-step agents?",
+    options: ["Single final-answer check only", "Trajectory-level evaluation with tool-call assertions", "Latency-only monitoring", "Model size comparison"],
+    correctIndex: 1,
+    explanation: "Agent quality depends on intermediate decisions, not just final output.",
+  },
+  {
+    id: 16,
+    question: "Why is prompt injection a security risk?",
+    options: ["It increases token speed", "Untrusted text can override intended instructions", "It improves retrieval precision", "It only affects UI layer"],
+    correctIndex: 1,
+    explanation: "Injected instructions can hijack model behavior if not constrained.",
+  },
+  {
+    id: 17,
+    question: "Which strategy improves factual reliability in generation systems?",
+    options: ["Higher temperature", "Citations + retrieval + post-generation verification", "Longer output length", "Removing system prompts"],
+    correctIndex: 1,
+    explanation: "Grounding plus verification reduces unsupported claims.",
+  },
+  {
+    id: 18,
+    question: "In online experiments, what is the primary purpose of guardrail metrics?",
+    options: ["Improve training speed", "Ensure no harmful regressions while optimizing target metric", "Increase prompt length", "Reduce dataset size"],
+    correctIndex: 1,
+    explanation: "Guardrails protect reliability, safety, and user experience.",
+  },
+  {
+    id: 19,
+    question: "What is the key reason to separate train/val/test chronologically in temporal data?",
+    options: ["Faster indexing", "Prevent future information leakage", "Increase sample count", "Improve class balance automatically"],
+    correctIndex: 1,
+    explanation: "Time-based splits mimic real deployment and avoid future leakage.",
+  },
+  {
+    id: 20,
+    question: "Which statement best describes robust model quality?",
+    options: ["High average score on one benchmark", "Consistent performance across slices, drift, and adversarial edge cases", "Large parameter count", "Low training loss only"],
+    correctIndex: 1,
+    explanation: "Robustness requires stable behavior across realistic and hard scenarios.",
+  },
+];
+
+export const QUIZ_BY_DIFFICULTY: Record<QuizDifficulty, QuizQuestion[]> = {
+  easy: EASY_QUESTIONS,
+  medium: MEDIUM_QUESTIONS,
+  hard: HARD_QUESTIONS,
+};
