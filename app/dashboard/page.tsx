@@ -2,29 +2,6 @@
 
 import { useRouter } from "next/navigation";
 
-const PICTURE_CONCEPTS = [
-  {
-    title: "From Meaning to Numbers",
-    image: "/visualize/picture-embeddings-flow.svg",
-    description: "How embeddings convert text, audio, and visuals into vectors.",
-  },
-  {
-    title: "AI Family Tree",
-    image: "/visualize/picture-ai-hierarchy.svg",
-    description: "AI, ML, DL, and LLMs as layered subsets.",
-  },
-  {
-    title: "Unified Embedding Pipeline",
-    image: "/visualize/picture-embedding-pipeline.svg",
-    description: "Multiple data sources mapped into one vector space.",
-  },
-  {
-    title: "Layered Intelligence",
-    image: "/visualize/picture-genai-hierarchy.svg",
-    description: "Why Generative AI sits inside Deep Learning.",
-  },
-];
-
 export default function DashboardPage() {
   const router = useRouter();
 
@@ -71,44 +48,7 @@ Learn AI from first principles to applied use cases with structured concepts, in
           </button>
         </div>
       </section>
-
-      <section style={conceptSection}>
-        <p style={sectionEyebrow}>Picture in the mind&apos;s eye</p>
-        <h2 style={sectionTitle}>Visual concepts you can open and explore</h2>
-        <div style={conceptGrid}>
-          {PICTURE_CONCEPTS.map((item) => (
-            <article key={item.title} style={conceptCard}>
-              <img src={item.image} alt={item.title} style={conceptImage} />
-              <h3 style={conceptTitle}>{item.title}</h3>
-              <p style={conceptText}>{item.description}</p>
-            </article>
-          ))}
-        </div>
-      </section>
     </main>
-  );
-}
-
-/* ---------------- Components ---------------- */
-
-function FeatureCard({
-  tag,
-  title,
-  desc,
-  onClick,
-}: {
-  tag: string;
-  title: string;
-  desc: string;
-  onClick: () => void;
-}) {
-  return (
-    <div style={card} onClick={onClick}>
-      <span style={cardTag}>{tag}</span>
-      <h3 style={cardTitle}>{title}</h3>
-      <p style={cardDesc}>{desc}</p>
-      <span style={arrow}>→</span>
-    </div>
   );
 }
 
@@ -160,62 +100,6 @@ const ctaRow = {
   marginBottom: 60,
 };
 
-const conceptSection = {
-  maxWidth: 1100,
-};
-
-const sectionEyebrow = {
-  margin: 0,
-  color: "#67e8f9",
-  fontSize: 12,
-  letterSpacing: 1.4,
-  textTransform: "uppercase" as const,
-};
-
-const sectionTitle = {
-  marginTop: 10,
-  marginBottom: 18,
-  fontSize: 34,
-  lineHeight: 1.15,
-  color: "#f8fafc",
-};
-
-const conceptGrid = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-  gap: 16,
-};
-
-const conceptCard = {
-  background: "linear-gradient(180deg, #020617, #0b1224)",
-  border: "1px solid #1f2a44",
-  borderRadius: 14,
-  padding: 14,
-};
-
-const conceptImage = {
-  width: "100%",
-  height: 170,
-  objectFit: "cover" as const,
-  borderRadius: 10,
-  border: "1px solid #334155",
-};
-
-const conceptTitle = {
-  margin: 0,
-  fontSize: 19,
-  lineHeight: 1.28,
-  color: "#dbeafe",
-};
-
-const conceptText = {
-  marginTop: 10,
-  marginBottom: 0,
-  fontSize: 15,
-  lineHeight: 1.62,
-  color: "#a9b5cb",
-};
-
 const ctaCard = {
   minWidth: 280,
   maxWidth: 360,
@@ -259,46 +143,4 @@ const ctaTitle = {
 const ctaDesc = {
   fontSize: 16,
   opacity: 0.8,
-};
-
-const cardGrid = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-  gap: 20,
-  maxWidth: 1100,
-};
-
-const card = {
-  position: "relative" as const,
-  background: "linear-gradient(180deg, #020617, #020617cc)",
-  border: "1px solid #1f2937",
-  borderRadius: 16,
-  padding: 24,
-  cursor: "pointer",
-  transition: "transform 0.2s ease, border 0.2s ease",
-};
-
-const cardTag = {
-  fontSize: 11,
-  letterSpacing: 1,
-  opacity: 0.7,
-};
-
-const cardTitle = {
-  fontSize: 20,
-  marginTop: 12,
-};
-
-const cardDesc = {
-  opacity: 0.75,
-  marginTop: 8,
-  lineHeight: 1.5,
-};
-
-const arrow = {
-  position: "absolute" as const,
-  bottom: 20,
-  right: 20,
-  fontSize: 20,
-  opacity: 0.6,
 };
