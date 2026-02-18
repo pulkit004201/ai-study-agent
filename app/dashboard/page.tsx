@@ -41,7 +41,49 @@ Learn AI from first principles to applied use cases with structured concepts, in
         </div>
       </section>
 
-      
+      <section style={conceptSection}>
+        <p style={sectionEyebrow}>Picture in the mind&apos;s eye</p>
+        <h2 style={sectionTitle}>Core ideas behind the visuals</h2>
+        <div style={conceptGrid}>
+          <article style={conceptCard}>
+            <h3 style={conceptTitle}>From Meaning to Numbers: How Embeddings Work</h3>
+            <p style={conceptText}>
+              Embedding models transform text, audio, and images into numeric vectors
+              that represent meaning. Similar concepts land close together in vector
+              space, enabling semantic search, recommendation, and retrieval.
+            </p>
+          </article>
+
+          <article style={conceptCard}>
+            <h3 style={conceptTitle}>The AI Family Tree: AI → ML → DL → LLMs/GenAI</h3>
+            <p style={conceptText}>
+              Artificial Intelligence is the broad field. Machine Learning is a subset
+              that learns from data. Deep Learning is a specialized ML approach using
+              neural networks. LLMs and Generative AI are focused applications inside
+              this deeper layer.
+            </p>
+          </article>
+
+          <article style={conceptCard}>
+            <h3 style={conceptTitle}>One Vector Space for Many Data Types</h3>
+            <p style={conceptText}>
+              Documents, images, audio, and database content can all be embedded into a
+              shared space. This allows one query to retrieve related information across
+              multiple formats using distance and similarity between vectors.
+            </p>
+          </article>
+
+          <article style={conceptCard}>
+            <h3 style={conceptTitle}>Layered Intelligence: Why Generative AI Sits Inside Deep Learning</h3>
+            <p style={conceptText}>
+              Generative AI is built on deep learning and large-scale training data.
+              Unlike classic predictive models, it synthesizes new content such as text,
+              images, and code. It is a specialized capability within the broader AI
+              stack, not a separate branch.
+            </p>
+          </article>
+        </div>
+      </section>
     </main>
   );
 }
@@ -115,6 +157,54 @@ const ctaRow = {
   gap: 18,
   flexWrap: "wrap" as const,
   marginBottom: 60,
+};
+
+const conceptSection = {
+  maxWidth: 1100,
+};
+
+const sectionEyebrow = {
+  margin: 0,
+  color: "#67e8f9",
+  fontSize: 12,
+  letterSpacing: 1.4,
+  textTransform: "uppercase" as const,
+};
+
+const sectionTitle = {
+  marginTop: 10,
+  marginBottom: 18,
+  fontSize: 34,
+  lineHeight: 1.15,
+  color: "#f8fafc",
+};
+
+const conceptGrid = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+  gap: 16,
+};
+
+const conceptCard = {
+  background: "linear-gradient(180deg, #020617, #0b1224)",
+  border: "1px solid #1f2a44",
+  borderRadius: 14,
+  padding: 18,
+};
+
+const conceptTitle = {
+  margin: 0,
+  fontSize: 19,
+  lineHeight: 1.28,
+  color: "#dbeafe",
+};
+
+const conceptText = {
+  marginTop: 10,
+  marginBottom: 0,
+  fontSize: 15,
+  lineHeight: 1.62,
+  color: "#a9b5cb",
 };
 
 const ctaCard = {
