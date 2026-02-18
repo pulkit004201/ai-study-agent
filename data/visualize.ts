@@ -9,46 +9,69 @@ export type VisualizeConcept = {
 
 export const VISUALIZE_CONCEPTS: VisualizeConcept[] = [
   {
-    title: "From Meaning to Numbers: How Embeddings Work",
-    summary: "Embedding models encode data into vectors that preserve semantic meaning.",
+    title: "Attention Layer: Connecting Every Word to Meaning",
+    summary: "Attention reads all words together, then assigns higher focus to the words that matter most.",
     detail:
-      "An embedding model converts text, audio, or images into a high-dimensional numeric vector. Each value captures latent traits of the input, and nearby vectors represent semantically similar items, making retrieval and ranking efficient.",
+      "In a sentence, each word may depend on other words far away from it. Attention solves this by letting each token compare itself with all other tokens, scoring relevance, and combining context dynamically. That means the model does not read left to right blindly; it builds a context-aware understanding at each step, which is why modern NLP handles ambiguity much better than older sequence methods.",
     analogy:
-      "Like assigning every concept a coordinate on a detailed map where nearby points mean similar meaning.",
+      "Like reading a paragraph with a highlighter: you scan everything, but highlight the most useful clues before answering.",
     useCase:
-      "Semantic search, recommendation systems, and grounding answers in RAG pipelines.",
-    image: "/visualize/picture-embeddings-flow.svg",
+      "Translation, question answering, summarization, and coreference resolution in chat systems.",
+    image: "/visualize/attention-layer-words.png",
   },
   {
-    title: "The AI Family Tree: AI → ML → DL → LLMs/GenAI",
-    summary: "Modern AI capabilities are nested layers, each more specialized than the previous one.",
+    title: "Transformer Blueprint: Encoder and Decoder Working Together",
+    summary: "Transformers split understanding and generation into encoder-decoder blocks powered by attention.",
     detail:
-      "Artificial Intelligence is the broad umbrella. Machine Learning sits inside it, focused on learning from data. Deep Learning is a subset of ML that uses multi-layer neural networks. LLMs and Generative AI are specialized deep learning systems trained at large scale.",
+      "The encoder transforms input into rich contextual representations. The decoder generates output token by token, using masked self-attention to avoid peeking at future tokens and encoder-decoder attention to pull relevant information from the encoded input. This architecture gives strong performance for machine translation and many sequence-to-sequence tasks.",
     analogy:
-      "Like moving from a country to state to city to neighborhood: each level is narrower and more specific.",
+      "Like one teammate understanding all notes deeply (encoder), while another writes the final answer step by step (decoder).",
     useCase:
-      "Scoping AI projects correctly, choosing model classes, and setting realistic expectations for system design.",
-    image: "/visualize/picture-ai-hierarchy.svg",
+      "Machine translation, summarization pipelines, and structured text generation workflows.",
+    image: "/visualize/transformer-architecture.jpg",
   },
   {
-    title: "One Vector Space for Many Data Types",
-    summary: "Different formats can be represented in one shared embedding space.",
+    title: "AI Hierarchy Map: AI, ML, DL, and LLMs",
+    summary: "This map shows that each layer is a subset of the broader layer above it.",
     detail:
-      "Files, documents, images, audio snippets, and database entries are transformed into vectors through an embedding pipeline. Once embedded, the system can compare all of them using vector similarity, enabling cross-modal retrieval from one query.",
-    analogy: "Like translating many languages into one shared language before searching for the closest meaning.",
+      "Artificial Intelligence includes all intelligent machine methods. Machine Learning is a subset that learns from data. Deep Learning is a deeper subset using neural networks with many layers. LLMs are a specialized deep learning branch focused on language understanding and generation. The nesting helps teams choose suitable methods instead of treating all AI models as identical.",
+    analogy:
+      "Like organizational levels: company, department, team, and role.",
     useCase:
-      "Enterprise search across PDFs, media, and structured records; unified recommendation and discovery flows.",
-    image: "/visualize/picture-embedding-pipeline.svg",
+      "Learning roadmaps, stakeholder communication, and model selection discussions.",
+    image: "/visualize/ai-ml-dl-llm-realtion.jpg",
   },
   {
-    title: "Layered Intelligence: Why Generative AI Sits Inside Deep Learning",
-    summary: "Generative AI is an advanced application within deep learning, not a separate field.",
+    title: "Layered Intelligence: Where Generative AI Fits",
+    summary: "Generative AI sits inside deep learning and inherits its strengths and constraints.",
     detail:
-      "Generative AI systems are built on deep neural architectures that learn rich representations from massive datasets. They inherit deep learning foundations, then extend them with next-token/objective learning to produce new text, images, code, or audio.",
+      "Generative AI is not a separate universe from ML. It is built on deep neural architectures and large-scale training, then optimized for content generation tasks. Understanding this hierarchy clarifies why data quality, compute, and model architecture decisions remain critical for GenAI performance and reliability.",
     analogy:
-      "Like a specialist built on top of general medical training: still part of the same discipline, but tuned for complex creation tasks.",
+      "Like a specialist doctor built on top of medical school and residency foundations.",
     useCase:
-      "Copilots, content generation, conversational assistants, and rapid ideation tools with human supervision.",
-    image: "/visualize/picture-genai-hierarchy.svg",
+      "Designing GenAI products, setting expectations for hallucination risk, and planning evaluation workflows.",
+    image: "/visualize/ai-ml-dl-llm-hero.png",
+  },
+  {
+    title: "Unified Embedding Pipeline: From Data Source to Vectors",
+    summary: "Many data formats can be converted into one vector space for similarity search.",
+    detail:
+      "Documents, images, audio, and records are passed through an embedding model to produce dense numeric vectors. These vectors are then indexed for fast nearest-neighbor retrieval. Because all items share one geometric space, applications can search semantically rather than keyword-by-keyword, making retrieval smarter and more flexible.",
+    analogy:
+      "Like converting many local maps into one global coordinate system.",
+    useCase:
+      "Enterprise search, recommendation systems, multimodal retrieval, and retrieval-augmented generation.",
+    image: "/visualize/embeddings-detail.png",
+  },
+  {
+    title: "Embedding Flow: Turning Meaning into Numbers",
+    summary: "Embedding models transform input objects into numeric representations that preserve meaning.",
+    detail:
+      "Each input object is encoded into a vector where distance corresponds to semantic relatedness. Similar concepts appear close together while unrelated concepts spread apart. This allows ranking, clustering, and similarity lookups to operate efficiently at scale using vector math instead of handcrafted rules.",
+    analogy:
+      "Like giving each concept an address in a large semantic city.",
+    useCase:
+      "Semantic ranking, duplicate detection, recommendation, and contextual retrieval in AI assistants.",
+    image: "/visualize/embeddings-hero.png",
   },
 ];

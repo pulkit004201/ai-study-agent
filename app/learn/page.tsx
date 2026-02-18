@@ -1,12 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { CONCEPTS } from "@/data/concepts";
 
 export default function LearnPage() {
-  const router = useRouter();
   const [index, setIndex] = useState(0);
+  const [isConceptMenuOpen, setConceptMenuOpen] = useState(false);
 
   const total = CONCEPTS.length;
   const concept = CONCEPTS[index];
@@ -26,6 +25,43 @@ export default function LearnPage() {
 
       {/* Progress */}
       <div style={progressWrap}>
+        <div style={selectorWrap}>
+          <p style={selectorLabel}>
+            Jump to Concept
+          </p>
+          <button
+            type="button"
+            style={selectorTrigger}
+            onClick={() => setConceptMenuOpen((open) => !open)}
+          >
+            <span>
+              {index + 1}. {concept.title}
+            </span>
+            <span>{isConceptMenuOpen ? "▲" : "▼"}</span>
+          </button>
+
+          {isConceptMenuOpen && (
+            <div style={selectorMenu}>
+              {CONCEPTS.map((item, i) => {
+                const active = i === index;
+                return (
+                  <button
+                    key={`${item.title}-${i}`}
+                    type="button"
+                    style={active ? { ...selectorOption, ...selectorOptionActive } : selectorOption}
+                    onClick={() => {
+                      setIndex(i);
+                      setConceptMenuOpen(false);
+                    }}
+                  >
+                    {i + 1}. {item.title}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
         <div style={progressTrack}>
           <div style={{ ...progressFill, width: `${progress}%` }} />
         </div>
@@ -40,7 +76,9 @@ export default function LearnPage() {
           {index + 1}. {concept.title}
         </h2>
 
-        <Block label="Explanation">{concept.explanation}</Block>
+        <Block label="Detailed Explanation">
+          {getDetailedExplanation(concept.explanation, concept.usage)}
+        </Block>
         <Block label="Analogy">{concept.analogy}</Block>
         <Block label="Example">{concept.example}</Block>
         <Block label="Usage Today">{concept.usage}</Block>
@@ -66,6 +104,10 @@ export default function LearnPage() {
       </div>
     </main>
   );
+}
+
+function getDetailedExplanation(explanation: string, usage: string) {
+  return `${explanation} In practice, this matters because ${usage.toLowerCase()}`;
 }
 
 /* ---------------- Blocks ---------------- */
@@ -115,6 +157,62 @@ const headline = {
 const progressWrap = {
   maxWidth: 900,
   margin: "0 auto 28px",
+};
+
+const selectorWrap = {
+  marginBottom: 12,
+  position: "relative" as const,
+  maxWidth: 420,
+};
+
+const selectorLabel = {
+  display: "block",
+  marginBottom: 6,
+  fontSize: 12,
+  letterSpacing: "0.08em",
+  textTransform: "uppercase" as const,
+  color: "#67e8f9",
+};
+
+const selectorTrigger = {
+  width: "100%",
+  padding: "10px 12px",
+  borderRadius: 12,
+  border: "1px solid rgba(255,255,255,0.2)",
+  background: "#08152f",
+  color: "#e5e7eb",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  cursor: "pointer",
+  textAlign: "left" as const,
+};
+
+const selectorMenu = {
+  position: "absolute" as const,
+  top: 68,
+  left: 0,
+  right: 0,
+  borderRadius: 12,
+  border: "1px solid rgba(255,255,255,0.2)",
+  background: "#08152f",
+  overflowY: "auto" as const,
+  maxHeight: 400, // approx 10 items visible before scrolling
+  zIndex: 20,
+};
+
+const selectorOption = {
+  width: "100%",
+  padding: "10px 12px",
+  border: "none",
+  background: "transparent",
+  color: "#e5e7eb",
+  textAlign: "left" as const,
+  cursor: "pointer",
+};
+
+const selectorOptionActive = {
+  background: "rgba(37, 99, 235, 0.28)",
 };
 
 const progressTrack = {

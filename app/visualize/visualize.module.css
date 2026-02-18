@@ -1,6 +1,7 @@
 .page {
   min-height: 100vh;
   padding: 26px 20px 42px;
+  font-family: inherit;
   color: #e2e8f0;
   background:
     radial-gradient(1100px 500px at 8% -20%, rgba(37, 99, 235, 0.22), transparent 55%),
@@ -95,11 +96,17 @@
   border: 1px solid rgba(100, 116, 139, 0.45);
   border-radius: 16px;
   overflow: hidden;
+  background: #020817;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .image {
   width: 100%;
   height: auto;
+  max-height: 72vh;
+  object-fit: contain;
   display: block;
 }
 
@@ -138,6 +145,95 @@
   line-height: 1.65;
   color: #dbeafe;
   font-size: 1.04rem;
+}
+
+.glossaryWord {
+  display: inline;
+  border: none;
+  background: rgba(56, 189, 248, 0.2);
+  color: #7dd3fc;
+  padding: 0 6px;
+  margin: 0 1px;
+  border-radius: 6px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.glossaryWord:hover {
+  background: rgba(56, 189, 248, 0.3);
+}
+
+.drawerBackdrop {
+  position: fixed;
+  inset: 0;
+  border: none;
+  background: rgba(2, 6, 23, 0.64);
+  z-index: 80;
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: min(460px, 92vw);
+  height: 100vh;
+  z-index: 90;
+  background: linear-gradient(180deg, #040b1e, #0a1735);
+  border-left: 1px solid #334155;
+  box-shadow: -18px 0 48px rgba(0, 0, 0, 0.45);
+  padding: 22px 18px 28px;
+  overflow-y: auto;
+}
+
+.drawerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.drawerEyebrow {
+  margin: 0;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #67e8f9;
+}
+
+.drawerClose {
+  border: 1px solid #334155;
+  border-radius: 10px;
+  background: #10203a;
+  color: #e2e8f0;
+  width: 34px;
+  height: 34px;
+  cursor: pointer;
+}
+
+.drawerTitle {
+  margin: 10px 0 0;
+  font-size: 2rem;
+  line-height: 1.1;
+}
+
+.drawerBlock {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.drawerLabel {
+  margin: 0;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #67e8f9;
+}
+
+.drawerText {
+  margin: 8px 0 0;
+  line-height: 1.6;
+  color: #dbeafe;
 }
 
 .footer {
