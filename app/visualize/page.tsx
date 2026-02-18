@@ -105,6 +105,7 @@ export default function VisualizePage() {
   );
 
   const concept = VISUALIZE_CONCEPTS[index];
+  const conceptImages = [concept.image, ...(concept.extraImages ?? [])];
   const glossary = selectedTerm ? GLOSSARY[selectedTerm] : null;
 
   function escapeRegex(value: string) {
@@ -200,15 +201,19 @@ export default function VisualizePage() {
           onTouchEnd={onTouchEnd}
         >
           <section className={styles.visualCard}>
-            <div className={styles.imagePanel}>
-              <Image
-                src={concept.image}
-                alt={`${concept.title} visual representation`}
-                width={1200}
-                height={560}
-                className={styles.image}
-                priority
-              />
+            <div className={styles.imageStack}>
+              {conceptImages.map((img, idx) => (
+                <div className={styles.imagePanel} key={`${img}-${idx}`}>
+                  <Image
+                    src={img}
+                    alt={`${concept.title} visual representation ${idx + 1}`}
+                    width={1200}
+                    height={560}
+                    className={styles.image}
+                    priority={idx === 0}
+                  />
+                </div>
+              ))}
             </div>
           </section>
 

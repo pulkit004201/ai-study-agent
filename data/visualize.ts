@@ -5,9 +5,23 @@ export type VisualizeConcept = {
   analogy: string;
   useCase: string;
   image: string;
+  extraImages?: string[];
 };
 
 export const VISUALIZE_CONCEPTS: VisualizeConcept[] = [
+  {
+    title: "RAG (Retrieval-Augmented Generation): Search First, Answer Better",
+    summary:
+      "RAG combines retrieval and generation so responses are grounded in relevant source context instead of model memory alone.",
+    detail:
+      "In a RAG pipeline, the system converts user queries into embeddings, retrieves the most relevant chunks from a knowledge base, and then passes those chunks to the LLM for answer generation. This architecture improves factuality, reduces hallucinations, and makes answers more traceable to source material. It is especially useful when knowledge changes frequently or when enterprise policy requires response grounding.",
+    analogy:
+      "Like taking an open-book exam: first find the right pages, then write the answer using those references.",
+    useCase:
+      "Internal knowledge assistants, customer support copilots, policy Q&A, and document-grounded enterprise chatbots.",
+    image: "/visualize/RAG.png",
+    extraImages: ["/visualize/Understanding-RAG-Part2.png"],
+  },
   {
     title: "Attention Layer: Connecting Every Word to Meaning",
     summary: "Attention reads all words together, then assigns higher focus to the words that matter most.",

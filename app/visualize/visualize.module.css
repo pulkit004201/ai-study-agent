@@ -92,6 +92,11 @@
   padding: 16px;
 }
 
+.imageStack {
+  display: grid;
+  gap: 12px;
+}
+
 .imagePanel {
   border: 1px solid rgba(100, 116, 139, 0.45);
   border-radius: 16px;
