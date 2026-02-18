@@ -9,93 +9,46 @@ export type VisualizeConcept = {
 
 export const VISUALIZE_CONCEPTS: VisualizeConcept[] = [
   {
-    title: "Artificial Intelligence",
-    summary: "Systems that perform tasks needing human-like intelligence.",
+    title: "From Meaning to Numbers: How Embeddings Work",
+    summary: "Embedding models encode data into vectors that preserve semantic meaning.",
     detail:
-      "Artificial Intelligence is the broader discipline of creating software that can reason, make decisions, and adapt from feedback. It includes rule-based methods and learning-based methods.",
-    analogy: "Like a digital teammate that can analyze and decide quickly.",
-    useCase: "Virtual assistants, fraud detection, and recommendation engines.",
-    image: "/visualize/artificial-intelligence.svg",
+      "An embedding model converts text, audio, or images into a high-dimensional numeric vector. Each value captures latent traits of the input, and nearby vectors represent semantically similar items, making retrieval and ranking efficient.",
+    analogy:
+      "Like assigning every concept a coordinate on a detailed map where nearby points mean similar meaning.",
+    useCase:
+      "Semantic search, recommendation systems, and grounding answers in RAG pipelines.",
+    image: "/visualize/picture-embeddings-flow.svg",
   },
   {
-    title: "Machine Learning",
-    summary: "Models learn patterns from data instead of fixed rules.",
+    title: "The AI Family Tree: AI → ML → DL → LLMs/GenAI",
+    summary: "Modern AI capabilities are nested layers, each more specialized than the previous one.",
     detail:
-      "Machine Learning trains algorithms on historical examples so they can predict outcomes for new data. Performance depends heavily on data quality and model tuning.",
-    analogy: "Learning from experience instead of memorizing instructions.",
-    useCase: "Demand forecasting, spam detection, and personalization.",
-    image: "/visualize/machine-learning.svg",
+      "Artificial Intelligence is the broad umbrella. Machine Learning sits inside it, focused on learning from data. Deep Learning is a subset of ML that uses multi-layer neural networks. LLMs and Generative AI are specialized deep learning systems trained at large scale.",
+    analogy:
+      "Like moving from a country to state to city to neighborhood: each level is narrower and more specific.",
+    useCase:
+      "Scoping AI projects correctly, choosing model classes, and setting realistic expectations for system design.",
+    image: "/visualize/picture-ai-hierarchy.svg",
   },
   {
-    title: "Neural Networks",
-    summary: "Layered models that learn complex input-output mappings.",
+    title: "One Vector Space for Many Data Types",
+    summary: "Different formats can be represented in one shared embedding space.",
     detail:
-      "Neural networks use weighted layers and activations to transform raw input into useful predictions. They are especially effective when patterns are non-linear and high-dimensional.",
-    analogy: "A network of connected decision units passing signals.",
-    useCase: "Image classification, forecasting, and voice understanding.",
-    image: "/visualize/neural-networks.svg",
+      "Files, documents, images, audio snippets, and database entries are transformed into vectors through an embedding pipeline. Once embedded, the system can compare all of them using vector similarity, enabling cross-modal retrieval from one query.",
+    analogy: "Like translating many languages into one shared language before searching for the closest meaning.",
+    useCase:
+      "Enterprise search across PDFs, media, and structured records; unified recommendation and discovery flows.",
+    image: "/visualize/picture-embedding-pipeline.svg",
   },
   {
-    title: "Deep Learning",
-    summary: "Neural networks with many layers for richer pattern learning.",
+    title: "Layered Intelligence: Why Generative AI Sits Inside Deep Learning",
+    summary: "Generative AI is an advanced application within deep learning, not a separate field.",
     detail:
-      "Deep Learning models automatically learn feature hierarchies, making them powerful for text, audio, and image tasks where manual feature engineering is difficult.",
-    analogy: "Many stacked filters refining understanding step-by-step.",
-    useCase: "Speech recognition, autonomous driving, and medical imaging.",
-    image: "/visualize/deep-learning.svg",
-  },
-  {
-    title: "Natural Language Processing",
-    summary: "Techniques for understanding and generating human language.",
-    detail:
-      "NLP combines linguistic structure with statistical modeling so machines can interpret meaning, classify text, answer questions, and generate coherent responses.",
-    analogy: "Teaching software to read, write, and interpret context.",
-    useCase: "Chatbots, sentiment analysis, and document search.",
-    image: "/visualize/nlp.svg",
-  },
-  {
-    title: "Computer Vision",
-    summary: "AI that interprets images and videos.",
-    detail:
-      "Computer Vision models detect objects, classify scenes, and track motion by extracting visual patterns from pixel data using convolutional and transformer-based architectures.",
-    analogy: "Giving software eyes that detect meaningful details.",
-    useCase: "Defect detection, face unlock, and traffic analytics.",
-    image: "/visualize/computer-vision.svg",
-  },
-  {
-    title: "Transformers",
-    summary: "Attention-based architecture for sequence modeling.",
-    detail:
-      "Transformers process all tokens in parallel and use attention to capture relationships across long contexts. This architecture powers modern language and multimodal models.",
-    analogy: "Reading a full paragraph while focusing on relevant words.",
-    useCase: "LLMs, translation, and summarization systems.",
-    image: "/visualize/transformers.svg",
-  },
-  {
-    title: "Embeddings",
-    summary: "Numerical vectors that represent semantic meaning.",
-    detail:
-      "Embeddings convert text, images, or entities into dense vectors where semantic similarity maps to geometric closeness, enabling relevance search and recommendation.",
-    analogy: "A map where similar ideas appear near each other.",
-    useCase: "Semantic search, clustering, and recommendation ranking.",
-    image: "/visualize/embeddings.svg",
-  },
-  {
-    title: "Retrieval-Augmented Generation (RAG)",
-    summary: "Combines search retrieval with language generation.",
-    detail:
-      "RAG fetches relevant documents first and then asks a model to answer using that context, improving factual grounding and reducing hallucinations.",
-    analogy: "Answering with notes open instead of memory alone.",
-    useCase: "Enterprise assistants and internal knowledge bots.",
-    image: "/visualize/rag.svg",
-  },
-  {
-    title: "Fine-Tuning",
-    summary: "Specializing a pre-trained model for a focused task.",
-    detail:
-      "Fine-Tuning updates model weights using domain-specific examples so outputs align with business vocabulary, tone, and quality expectations.",
-    analogy: "Advanced coaching after general training.",
-    useCase: "Custom support bots, legal drafting, and clinical workflows.",
-    image: "/visualize/fine-tuning.svg",
+      "Generative AI systems are built on deep neural architectures that learn rich representations from massive datasets. They inherit deep learning foundations, then extend them with next-token/objective learning to produce new text, images, code, or audio.",
+    analogy:
+      "Like a specialist built on top of general medical training: still part of the same discipline, but tuned for complex creation tasks.",
+    useCase:
+      "Copilots, content generation, conversational assistants, and rapid ideation tools with human supervision.",
+    image: "/visualize/picture-genai-hierarchy.svg",
   },
 ];

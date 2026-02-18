@@ -2,6 +2,29 @@
 
 import { useRouter } from "next/navigation";
 
+const PICTURE_CONCEPTS = [
+  {
+    title: "From Meaning to Numbers",
+    image: "/visualize/picture-embeddings-flow.svg",
+    description: "How embeddings convert text, audio, and visuals into vectors.",
+  },
+  {
+    title: "AI Family Tree",
+    image: "/visualize/picture-ai-hierarchy.svg",
+    description: "AI, ML, DL, and LLMs as layered subsets.",
+  },
+  {
+    title: "Unified Embedding Pipeline",
+    image: "/visualize/picture-embedding-pipeline.svg",
+    description: "Multiple data sources mapped into one vector space.",
+  },
+  {
+    title: "Layered Intelligence",
+    image: "/visualize/picture-genai-hierarchy.svg",
+    description: "Why Generative AI sits inside Deep Learning.",
+  },
+];
+
 export default function DashboardPage() {
   const router = useRouter();
 
@@ -38,50 +61,28 @@ Learn AI from first principles to applied use cases with structured concepts, in
             <span style={ctaTitle}>Quiz Mode →</span>
             <span style={ctaDesc}>Test your understanding with quick rounds.</span>
           </button>
+
+          <button
+            style={{ ...ctaCard, ...tertiaryCard }}
+            onClick={() => router.push("/visualize")}
+          >
+            <span style={ctaTitle}>Picture in the mind&apos;s eye →</span>
+            <span style={ctaDesc}>Explore visual concepts with image-first learning.</span>
+          </button>
         </div>
       </section>
 
       <section style={conceptSection}>
         <p style={sectionEyebrow}>Picture in the mind&apos;s eye</p>
-        <h2 style={sectionTitle}>Core ideas behind the visuals</h2>
+        <h2 style={sectionTitle}>Visual concepts you can open and explore</h2>
         <div style={conceptGrid}>
-          <article style={conceptCard}>
-            <h3 style={conceptTitle}>From Meaning to Numbers: How Embeddings Work</h3>
-            <p style={conceptText}>
-              Embedding models transform text, audio, and images into numeric vectors
-              that represent meaning. Similar concepts land close together in vector
-              space, enabling semantic search, recommendation, and retrieval.
-            </p>
-          </article>
-
-          <article style={conceptCard}>
-            <h3 style={conceptTitle}>The AI Family Tree: AI → ML → DL → LLMs/GenAI</h3>
-            <p style={conceptText}>
-              Artificial Intelligence is the broad field. Machine Learning is a subset
-              that learns from data. Deep Learning is a specialized ML approach using
-              neural networks. LLMs and Generative AI are focused applications inside
-              this deeper layer.
-            </p>
-          </article>
-
-          <article style={conceptCard}>
-            <h3 style={conceptTitle}>One Vector Space for Many Data Types</h3>
-            <p style={conceptText}>
-              Documents, images, audio, and database content can all be embedded into a
-              shared space. This allows one query to retrieve related information across
-              multiple formats using distance and similarity between vectors.
-            </p>
-          </article>
-
-          <article style={conceptCard}>
-            <h3 style={conceptTitle}>Layered Intelligence: Why Generative AI Sits Inside Deep Learning</h3>
-            <p style={conceptText}>
-              Generative AI is built on deep learning and large-scale training data.
-              Unlike classic predictive models, it synthesizes new content such as text,
-              images, and code. It is a specialized capability within the broader AI
-              stack, not a separate branch.
-            </p>
-          </article>
+          {PICTURE_CONCEPTS.map((item) => (
+            <article key={item.title} style={conceptCard}>
+              <img src={item.image} alt={item.title} style={conceptImage} />
+              <h3 style={conceptTitle}>{item.title}</h3>
+              <p style={conceptText}>{item.description}</p>
+            </article>
+          ))}
         </div>
       </section>
     </main>
@@ -189,7 +190,15 @@ const conceptCard = {
   background: "linear-gradient(180deg, #020617, #0b1224)",
   border: "1px solid #1f2a44",
   borderRadius: 14,
-  padding: 18,
+  padding: 14,
+};
+
+const conceptImage = {
+  width: "100%",
+  height: 170,
+  objectFit: "cover" as const,
+  borderRadius: 10,
+  border: "1px solid #334155",
 };
 
 const conceptTitle = {
@@ -233,6 +242,12 @@ const secondaryCard = {
   background: "linear-gradient(180deg, #020617, #0b1730)",
   borderColor: "#1e3a8a",
   color: "#e5e7eb",
+};
+
+const tertiaryCard = {
+  background: "linear-gradient(180deg, #1f1147, #100829)",
+  borderColor: "#6d28d9",
+  color: "#ede9fe",
 };
 
 const ctaTitle = {

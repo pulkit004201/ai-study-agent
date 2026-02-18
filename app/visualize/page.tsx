@@ -40,8 +40,8 @@ export default function VisualizePage() {
   return (
     <main className={styles.page}>
       <header className={styles.header}>
-        <p className={styles.eyebrow}>VISUALISE MODE</p>
-        <h1 className={styles.heading}>Understand AI concepts with diagrams</h1>
+        <p className={styles.eyebrow}>PICTURE IN THE MIND&apos;S EYE</p>
+        <h1 className={styles.heading}>Understand 4 core AI concepts with diagrams</h1>
         <p className={styles.subhead}>
           Swipe on mobile or tap concepts to explore a visual breakdown.
         </p>
