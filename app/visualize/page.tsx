@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { VISUALIZE_CONCEPTS } from "@/data/visualize";
+import { trackModuleAccess } from "@/lib/client-analytics";
 import styles from "./visualize.module.css";
 
 const GLOSSARY = {
@@ -107,6 +108,10 @@ export default function VisualizePage() {
   const concept = VISUALIZE_CONCEPTS[index];
   const conceptImages = [concept.image, ...(concept.extraImages ?? [])];
   const glossary = selectedTerm ? GLOSSARY[selectedTerm] : null;
+
+  useEffect(() => {
+    trackModuleAccess("visualize");
+  }, []);
 
   function escapeRegex(value: string) {
     return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

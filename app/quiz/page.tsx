@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   QUIZ_BY_DIFFICULTY,
   QUIZ_LABELS,
   QuizDifficulty,
 } from "@/data/quizzes";
+import { trackModuleAccess } from "@/lib/client-analytics";
 
 type QuizSession = {
   current: number;
@@ -47,6 +48,10 @@ export default function QuizPage() {
     if (session.attempted === 0) return 0;
     return Math.round((session.score / session.attempted) * 100);
   }, [session.attempted, session.score]);
+
+  useEffect(() => {
+    trackModuleAccess("quiz");
+  }, []);
 
   function updateSession(updater: (prev: QuizSession) => QuizSession) {
     setSessions((prev) => ({

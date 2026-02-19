@@ -30,6 +30,7 @@ export default function Navbar() {
     { label: "Dashboard", path: "/dashboard" },
     { label: "Learn", path: "/learn" },
     { label: "Visualise", path: "/visualize" },
+    { label: "Analytics", path: "/analytics" },
     { label: "Case Studies", path: "/case-studies" },
     { label: "Quiz", path: "/quiz" },
   ];

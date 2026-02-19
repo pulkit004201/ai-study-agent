@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { CONCEPTS } from "@/data/concepts";
+import { trackModuleAccess } from "@/lib/client-analytics";
 
 export default function LearnPage() {
   const [index, setIndex] = useState(0);
@@ -14,6 +15,10 @@ export default function LearnPage() {
   useEffect(() => {
     localStorage.setItem("conceptProgress", String(index));
   }, [index]);
+
+  useEffect(() => {
+    trackModuleAccess("learn");
+  }, []);
 
   return (
     <main style={page}>

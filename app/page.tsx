@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { trackLogin } from "@/lib/client-analytics";
 import styles from "./page.module.css";
 
 export default function LoginPage() {
@@ -16,7 +17,7 @@ export default function LoginPage() {
       return;
     }
 
-    localStorage.setItem("userEmail", normalizedEmail);
+    trackLogin(normalizedEmail);
     router.push("/dashboard");
   }
 
