@@ -1,8 +1,27 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #020617;
+  --foreground: #e2e8f0;
+  --text-muted: #cbd5e1;
+  --text-soft: #94a3b8;
+  --hero-accent: #99f6e4;
+  --surface: #020617;
+  --surface-alt: #0f172a;
+  --border: #1f2937;
+  --nav-bg: rgba(0, 0, 0, 0.9);
+  --nav-button-bg: #0f172a;
+  --nav-button-text: #e5e7eb;
+  --nav-button-border: #1f2937;
+  --nav-button-active: #2563eb;
+  --nav-button-active-border: #3b82f6;
+  --nav-button-active-text: #ffffff;
+  --account-dropdown-bg: #0b1228;
+  --account-email-bg: rgba(30, 41, 59, 0.8);
+  --account-email-text: #bfdbfe;
+  --danger-bg: #991b1b;
+  --danger-border: #b91c1c;
+  --danger-text: #ffe4e6;
 }
 
 @theme inline {
@@ -12,15 +31,32 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html[data-theme="light"] {
+  --background: #f3f7ff;
+  --foreground: #0f172a;
+  --text-muted: #334155;
+  --text-soft: #475569;
+  --hero-accent: #0f766e;
+  --surface: #f8fbff;
+  --surface-alt: #ffffff;
+  --border: #bfdbfe;
+  --nav-bg: rgba(248, 251, 255, 0.94);
+  --nav-button-bg: #ffffff;
+  --nav-button-text: #0f172a;
+  --nav-button-border: #bfdbfe;
+  --nav-button-active: #2563eb;
+  --nav-button-active-border: #2563eb;
+  --nav-button-active-text: #ffffff;
+  --account-dropdown-bg: #ffffff;
+  --account-email-bg: #e0edff;
+  --account-email-text: #1e3a8a;
+  --danger-bg: #fee2e2;
+  --danger-border: #fecaca;
+  --danger-text: #7f1d1d;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-lexend), "Segoe UI", sans-serif;
 }

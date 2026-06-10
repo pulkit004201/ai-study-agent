@@ -18,18 +18,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body
-        className={lexend.className}
-        style={{
-          margin: 0,
-          backgroundColor: "#000",
-          color: "#fff",
-        }}
-      >
-        {/* ✅ NAVBAR IS NOW MOUNTED */}
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('theme-preference')||'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();`,
+          }}
+        />
+      </head>
+      <body className={lexend.className} style={{ margin: 0 }}>
         <Navbar />
-
         {children}
       </body>
     </html>

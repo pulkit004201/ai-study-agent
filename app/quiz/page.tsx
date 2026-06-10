@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import {
   QUIZ_BY_DIFFICULTY,
   QUIZ_LABELS,
   QuizDifficulty,
 } from "@/data/quizzes";
-import { trackModuleAccess } from "@/lib/client-analytics";
+import { recordQuizAnswerHistory } from "@/lib/user-history-client";
+import { useSectionAnalytics } from "@/lib/use-section-analytics";
 
 type QuizSession = {
   current: number;
@@ -19,6 +20,7 @@ type QuizSession = {
 };
 
 const DIFFICULTIES: QuizDifficulty[] = ["easy", "medium", "hard"];
+const QUIZ_PROGRESS_KEY_PREFIX = "quiz_progress_v1";
 
 function createInitialSession(): QuizSession {
   return {
@@ -31,14 +33,66 @@ function createInitialSession(): QuizSession {
   };
 }
 
-export default function QuizPage() {
-  const router = useRouter();
-  const [difficulty, setDifficulty] = useState<QuizDifficulty>("easy");
-  const [sessions, setSessions] = useState<Record<QuizDifficulty, QuizSession>>({
+function createInitialSessions() {
+  return {
     easy: createInitialSession(),
     medium: createInitialSession(),
     hard: createInitialSession(),
-  });
+  } as Record<QuizDifficulty, QuizSession>;
+}
+
+type SavedQuizProgress = {
+  difficulty: QuizDifficulty;
+  sessions: Record<QuizDifficulty, QuizSession>;
+};
+
+function getProgressKey(userEmail: string) {
+  return `${QUIZ_PROGRESS_KEY_PREFIX}:${userEmail}`;
+}
+
+function parseSavedProgress(raw: string | null): SavedQuizProgress | null {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as SavedQuizProgress;
+    if (
+      !parsed ||
+      !parsed.sessions ||
+      !parsed.sessions.easy ||
+      !parsed.sessions.medium ||
+      !parsed.sessions.hard ||
+      !parsed.difficulty
+    ) {
+      return null;
+    }
+    if (!DIFFICULTIES.includes(parsed.difficulty)) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+export default function QuizPage() {
+  const router = useRouter();
+  const [difficulty, setDifficulty] = useState<QuizDifficulty>("easy");
+  const [sessions, setSessions] = useState<Record<QuizDifficulty, QuizSession>>(
+    createInitialSessions()
+  );
+  const [isProgressLoaded, setIsProgressLoaded] = useState(false);
+  const userEmail = useSyncExternalStore(
+    (onStoreChange) => {
+      if (typeof window === "undefined") return () => {};
+      const handler = () => onStoreChange();
+      window.addEventListener("storage", handler);
+      window.addEventListener("focus", handler);
+      return () => {
+        window.removeEventListener("storage", handler);
+        window.removeEventListener("focus", handler);
+      };
+    },
+    () => localStorage.getItem("userEmail")?.trim().toLowerCase() ?? "",
+    () => ""
+  );
+  const isSignedInUser = Boolean(userEmail);
 
   const questions = QUIZ_BY_DIFFICULTY[difficulty];
   const session = sessions[difficulty];
@@ -49,9 +103,43 @@ export default function QuizPage() {
     return Math.round((session.score / session.attempted) * 100);
   }, [session.attempted, session.score]);
 
+  const hasSavedProgress = useMemo(() => {
+    return DIFFICULTIES.some((level) => {
+      const s = sessions[level];
+      return (
+        s.current > 0 ||
+        s.selected !== null ||
+        s.showAnswer ||
+        s.score > 0 ||
+        s.attempted > 0 ||
+        s.completed
+      );
+    });
+  }, [sessions]);
+
+  useSectionAnalytics("quiz");
+
   useEffect(() => {
-    trackModuleAccess("quiz");
-  }, []);
+    Promise.resolve().then(() => {
+      if (!userEmail) {
+        setIsProgressLoaded(true);
+        return;
+      }
+      const saved = parseSavedProgress(localStorage.getItem(getProgressKey(userEmail)));
+      if (saved) {
+        setSessions(saved.sessions);
+        setDifficulty(saved.difficulty);
+      }
+      setIsProgressLoaded(true);
+    });
+  }, [userEmail]);
+
+  useEffect(() => {
+    if (!isProgressLoaded) return;
+    if (!userEmail) return;
+    const payload: SavedQuizProgress = { difficulty, sessions };
+    localStorage.setItem(getProgressKey(userEmail), JSON.stringify(payload));
+  }, [difficulty, isProgressLoaded, sessions, userEmail]);
 
   function updateSession(updater: (prev: QuizSession) => QuizSession) {
     setSessions((prev) => ({
@@ -71,8 +159,22 @@ export default function QuizPage() {
     }));
   }
 
+  function resetSavedProgress() {
+    const userEmail = localStorage.getItem("userEmail")?.trim().toLowerCase() ?? "";
+    if (!userEmail) return;
+    localStorage.removeItem(getProgressKey(userEmail));
+    setSessions(createInitialSessions());
+    setDifficulty("easy");
+  }
+
   function selectOption(i: number) {
     if (session.showAnswer || session.completed) return;
+
+    const userEmail = localStorage.getItem("userEmail")?.trim().toLowerCase() ?? "";
+    const userName = localStorage.getItem("userName")?.trim() ?? userEmail;
+    if (userEmail) {
+      void recordQuizAnswerHistory(userEmail, userName);
+    }
 
     updateSession((prev) => ({
       ...prev,
@@ -136,6 +238,19 @@ export default function QuizPage() {
             <p style={statValue}>{accuracy}%</p>
           </div>
         </div>
+
+        {isSignedInUser && (
+          <div style={resumeWrap}>
+            <p style={resumeText}>
+              {hasSavedProgress
+                ? "Saved progress loaded for this account."
+                : "No saved progress yet for this account."}
+            </p>
+            <button style={resetSavedBtn} onClick={resetSavedProgress}>
+              Reset Saved Progress
+            </button>
+          </div>
+        )}
 
         {!session.completed ? (
           <section style={card}>
@@ -211,9 +326,9 @@ export default function QuizPage() {
 const page = {
   minHeight: "100vh",
   background:
-    "radial-gradient(1200px 600px at 30% -10%, rgba(56,189,248,0.18), transparent 40%), #020617",
+    "radial-gradient(1200px 600px at 30% -10%, rgba(56,189,248,0.18), transparent 40%), var(--background)",
   padding: "80px 24px",
-  color: "#e5e7eb",
+  color: "var(--foreground)",
 };
 
 const container = {
@@ -224,7 +339,7 @@ const container = {
 const eyebrow = {
   fontSize: 12,
   letterSpacing: "0.14em",
-  color: "#67e8f9",
+  color: "var(--hero-accent)",
   marginBottom: 8,
 };
 
@@ -242,9 +357,9 @@ const tabsWrap = {
 };
 
 const tabBtn = {
-  border: "1px solid rgba(148,163,184,0.32)",
-  background: "#0b152e",
-  color: "#cbd5e1",
+  border: "1px solid var(--border)",
+  background: "var(--surface-alt)",
+  color: "var(--foreground)",
   borderRadius: 999,
   padding: "8px 14px",
   cursor: "pointer",
@@ -261,38 +376,64 @@ const statsWrap = {
   display: "grid",
   gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
   gap: 10,
+  marginBottom: 10,
+};
+
+const resumeWrap = {
   marginBottom: 14,
+  display: "flex",
+  gap: 10,
+  flexWrap: "wrap" as const,
+  alignItems: "center",
+  justifyContent: "space-between",
+};
+
+const resumeText = {
+  margin: 0,
+  color: "var(--text-muted)",
+  fontSize: 12,
+};
+
+const resetSavedBtn = {
+  padding: "6px 12px",
+  borderRadius: 999,
+  border: "1px solid var(--border)",
+  background: "var(--surface-alt)",
+  color: "var(--text-muted)",
+  cursor: "pointer",
+  fontWeight: 600,
+  fontSize: 12,
+  opacity: 0.85,
 };
 
 const statCard = {
-  padding: "12px 14px",
-  borderRadius: 12,
-  border: "1px solid rgba(148,163,184,0.25)",
-  background: "rgba(15, 23, 42, 0.6)",
+  padding: "8px 12px",
+  borderRadius: 10,
+  border: "1px solid var(--border)",
+  background: "var(--surface-alt)",
 };
 
 const statLabel = {
   margin: 0,
-  fontSize: 12,
+  fontSize: 11,
   letterSpacing: "0.08em",
   textTransform: "uppercase" as const,
-  color: "#67e8f9",
+  color: "var(--hero-accent)",
 };
 
 const statValue = {
-  margin: "6px 0 0",
-  fontSize: 20,
+  margin: "4px 0 0",
+  fontSize: 17,
   fontWeight: 700,
 };
 
 const card = {
   padding: 28,
   borderRadius: 20,
-  background:
-    "linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))",
-  border: "1px solid rgba(255,255,255,0.08)",
+  background: "linear-gradient(180deg, var(--surface-alt), var(--surface))",
+  border: "1px solid var(--border)",
   backdropFilter: "blur(14px)",
-  boxShadow: "0 30px 80px rgba(0,0,0,0.6)",
+  boxShadow: "0 24px 54px rgba(0,0,0,0.18)",
 };
 
 const counter = {
@@ -310,21 +451,21 @@ const option = {
   width: "100%",
   padding: "14px 16px",
   borderRadius: 12,
-  border: "1px solid rgba(255,255,255,0.1)",
-  color: "#e5e7eb",
+  border: "1px solid var(--border)",
+  color: "var(--foreground)",
   marginBottom: 12,
   textAlign: "left" as const,
   transition: "all 0.25s ease",
 };
 
-const optionBg = "rgba(255,255,255,0.06)";
+const optionBg = "var(--surface-alt)";
 const correctBg = "linear-gradient(90deg, #14532d, #166534)";
 const wrongBg = "linear-gradient(90deg, #7f1d1d, #991b1b)";
 
 const explanation = {
   marginTop: 16,
   padding: 14,
-  background: "rgba(255,255,255,0.06)",
+  background: "var(--surface-alt)",
   borderRadius: 12,
   fontSize: 14,
   lineHeight: 1.6,
@@ -360,9 +501,9 @@ const primaryBtn = {
 const secondaryBtn = {
   padding: "12px 22px",
   borderRadius: 999,
-  background: "rgba(255,255,255,0.08)",
-  border: "1px solid rgba(255,255,255,0.16)",
-  color: "#e5e7eb",
+  background: "var(--surface-alt)",
+  border: "1px solid var(--border)",
+  color: "var(--foreground)",
   fontWeight: 600,
   cursor: "pointer",
 };

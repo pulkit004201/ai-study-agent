@@ -1,4 +1,4 @@
-import { AnalyticsModule } from "@/lib/analytics-store";
+import type { AnalyticsModule } from "@/lib/analytics-store";
 
 function getOrCreateUserId() {
   if (typeof window === "undefined") return "server";
@@ -20,8 +20,9 @@ function getOrCreateUserId() {
 }
 
 async function sendEvent(payload: {
-  type: "login" | "module_access";
+  type: "login" | "module_access" | "module_session";
   module?: AnalyticsModule;
+  durationMs?: number;
 }) {
   if (typeof window === "undefined") return;
 
@@ -47,4 +48,9 @@ export function trackLogin(email: string) {
 
 export function trackModuleAccess(module: AnalyticsModule) {
   sendEvent({ type: "module_access", module });
+}
+
+export function trackModuleSession(module: AnalyticsModule, durationMs: number) {
+  const safeDuration = Math.max(0, Math.round(durationMs));
+  sendEvent({ type: "module_session", module, durationMs: safeDuration });
 }

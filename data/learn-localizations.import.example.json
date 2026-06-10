@@ -1,0 +1,30 @@
+{
+  "replace": false,
+  "items": [
+    {
+      "language": "hindi",
+      "title": "Artificial Intelligence (AI)",
+      "explanation": "AI aise systems banane ka kshetra hai jo insaan jaise sochne aur faisla lene wale kaam kar sakte hain.",
+      "analogy": "Jaise ek trainee jo practice se better hota jata hai, AI bhi data se seekhta hai.",
+      "example": "Spam filter email ko spam ya important category me classify karta hai.",
+      "usage": "Chatbots, fraud detection, recommendation systems, aur automation me AI use hota hai.",
+      "deepExample": {
+        "title": "HR Chatbot me AI ka istemal",
+        "context": "Ek company employee policy ke sawalon ka jawab dene ke liye AI assistant bana rahi hai.",
+        "setup": [
+          "Team policy documents ko collect karke clean text banati hai.",
+          "System query format aur expected answer style define karta hai."
+        ],
+        "realtimeFlow": [
+          "Employee sawal karta hai aur system intent detect karta hai.",
+          "Assistant policy context dekhkar policy-aligned jawab generate karta hai."
+        ],
+        "whyBetter": "Isse fast aur consistent answers milte hain aur HR team ka repetitive load kam hota hai.",
+        "failureModes": [
+          "Agar policy update reflect na ho to assistant outdated jawab de sakta hai.",
+          "Agar inputs ambiguous ho to clarification ke bina galat interpretation ho sakta hai."
+        ]
+      }
+    }
+  ]
+}

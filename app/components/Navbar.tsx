@@ -1,13 +1,61 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { isAnalyticsUserAllowed } from "@/lib/analytics-access";
 
 export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
   const [isMobile, setIsMobile] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [theme, setTheme] = useState<"dark" | "light">(() => {
+    if (typeof window === "undefined") {
+      return "dark";
+    }
+    return localStorage.getItem("theme-preference") === "light"
+      ? "light"
+      : "dark";
+  });
+  const canViewAnalytics = useSyncExternalStore(
+    (onStoreChange) => {
+      if (typeof window === "undefined") {
+        return () => {};
+      }
+
+      const handleChange = () => onStoreChange();
+      window.addEventListener("storage", handleChange);
+      window.addEventListener("focus", handleChange);
+      return () => {
+        window.removeEventListener("storage", handleChange);
+        window.removeEventListener("focus", handleChange);
+      };
+    },
+    () =>
+      typeof window !== "undefined" &&
+      isAnalyticsUserAllowed(localStorage.getItem("userEmail")),
+    () => false
+  );
+  const userEmail = useSyncExternalStore(
+    (onStoreChange) => {
+      if (typeof window === "undefined") {
+        return () => {};
+      }
+      const handleChange = () => onStoreChange();
+      window.addEventListener("storage", handleChange);
+      window.addEventListener("focus", handleChange);
+      return () => {
+        window.removeEventListener("storage", handleChange);
+        window.removeEventListener("focus", handleChange);
+      };
+    },
+    () =>
+      typeof window !== "undefined"
+        ? localStorage.getItem("userEmail")?.trim().toLowerCase() || "Guest"
+        : "Guest",
+    () => "Guest"
+  );
 
   useEffect(() => {
     const syncViewport = () => {
@@ -26,26 +74,45 @@ export default function Navbar() {
     };
   }, [isMobile, menuOpen]);
 
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
+
   const navItems = [
     { label: "Dashboard", path: "/dashboard" },
     { label: "Learn", path: "/learn" },
     { label: "Visualise", path: "/visualize" },
-    { label: "Analytics", path: "/analytics" },
-    { label: "Case Studies", path: "/case-studies" },
+    { label: "Movies", path: "/movies" },
     { label: "Quiz", path: "/quiz" },
   ];
+  if (canViewAnalytics) {
+    navItems.splice(3, 0, { label: "Analytics", path: "/analytics" });
+  }
 
   function handleLogout() {
-    localStorage.clear();
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("userName");
+    localStorage.removeItem("userPicture");
     setMenuOpen(false);
+    setAccountOpen(false);
     router.push("/");
+  }
+
+  function handleThemeChange(nextTheme: "dark" | "light") {
+    setTheme(nextTheme);
+    localStorage.setItem("theme-preference", nextTheme);
+    document.documentElement.setAttribute("data-theme", nextTheme);
+  }
+
+  if (pathname === "/") {
+    return null;
   }
 
   return (
     <>
-      <nav style={styles.nav}>
+      <nav style={isMobile ? { ...styles.nav, ...styles.navMobile } : styles.nav}>
         {/* Brand */}
-        <div style={styles.brand} >
+        <div style={isMobile ? { ...styles.brand, ...styles.brandMobile } : styles.brand} >
           AI Learn Hub
         </div>
 
@@ -66,16 +133,64 @@ export default function Navbar() {
                 </button>
               );
             })}
-            <button onClick={handleLogout} style={{ ...styles.button, ...styles.logout }}>
-              Logout
-            </button>
+
+            <div style={styles.accountWrap}>
+              <button
+                onClick={() => setAccountOpen((open) => !open)}
+                aria-label="Account"
+                style={{
+                  ...styles.accountIconBtn,
+                  ...(accountOpen ? styles.accountIconBtnActive : {}),
+                }}
+              >
+                <span style={styles.accountIcon}>👤</span>
+              </button>
+
+              {accountOpen && (
+                <div style={styles.accountDropdown}>
+                  <p style={styles.mobileAccountTitle}>Theme</p>
+                  <div style={styles.themeToggleWrap}>
+                    <button
+                      aria-label="Enable dark theme"
+                      onClick={() => handleThemeChange("dark")}
+                      style={{
+                        ...styles.themeToggleBtn,
+                        ...(theme === "dark" ? styles.themeToggleBtnActive : {}),
+                      }}
+                    >
+                      Dark
+                    </button>
+                    <button
+                      aria-label="Enable light theme"
+                      onClick={() => handleThemeChange("light")}
+                      style={{
+                        ...styles.themeToggleBtn,
+                        ...(theme === "light" ? styles.themeToggleBtnActive : {}),
+                      }}
+                    >
+                      Light
+                    </button>
+                  </div>
+                  <span style={styles.emailTag}>{userEmail}</span>
+                  <button
+                    onClick={handleLogout}
+                    style={{ ...styles.button, ...styles.logout, ...styles.accountLogoutBtn }}
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
         {isMobile && (
           <button
             aria-label="Toggle menu"
-            onClick={() => setMenuOpen((open) => !open)}
+            onClick={() => {
+              setMenuOpen((open) => !open);
+              setAccountOpen(false);
+            }}
             style={styles.hamburger}
           >
             {menuOpen ? "✕" : "☰"}
@@ -83,7 +198,15 @@ export default function Navbar() {
         )}
       </nav>
 
-      {isMobile && menuOpen && <button style={styles.overlay} onClick={() => setMenuOpen(false)} />}
+      {isMobile && menuOpen && (
+        <button
+          style={styles.overlay}
+          onClick={() => {
+            setMenuOpen(false);
+            setAccountOpen(false);
+          }}
+        />
+      )}
 
       {isMobile && (
         <aside
@@ -100,6 +223,7 @@ export default function Navbar() {
                 key={item.path}
                 onClick={() => {
                   setMenuOpen(false);
+                  setAccountOpen(false);
                   router.push(item.path);
                 }}
                 style={{
@@ -111,13 +235,40 @@ export default function Navbar() {
               </button>
             );
           })}
-          <button onClick={handleLogout} style={{ ...styles.drawerButton, ...styles.drawerLogout }}>
-            Logout
-          </button>
+          <div style={styles.mobileAccountBlock}>
+            <p style={styles.mobileAccountTitle}>Theme</p>
+            <div style={styles.themeToggleWrapMobile}>
+              <button
+                aria-label="Enable dark theme"
+                onClick={() => handleThemeChange("dark")}
+                style={{
+                  ...styles.themeToggleBtn,
+                  ...(theme === "dark" ? styles.themeToggleBtnActive : {}),
+                }}
+              >
+                Dark
+              </button>
+              <button
+                aria-label="Enable light theme"
+                onClick={() => handleThemeChange("light")}
+                style={{
+                  ...styles.themeToggleBtn,
+                  ...(theme === "light" ? styles.themeToggleBtnActive : {}),
+                }}
+              >
+                Light
+              </button>
+            </div>
+            <p style={styles.mobileAccountTitle}>Account</p>
+            <span style={styles.mobileEmailTag}>{userEmail}</span>
+            <button onClick={handleLogout} style={{ ...styles.drawerButton, ...styles.drawerLogout }}>
+              Logout
+            </button>
+          </div>
         </aside>
       )}
 
-      <div style={styles.spacer} />
+      <div style={isMobile ? { ...styles.spacer, ...styles.spacerMobile } : styles.spacer} />
     </>
   );
 }
@@ -135,22 +286,34 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: "space-between",
     alignItems: "center",
     padding: "16px 32px",
-    backgroundColor: "rgba(0, 0, 0, 0.9)",
+    backgroundColor: "var(--nav-bg)",
     backdropFilter: "blur(8px)",
     borderBottomWidth: 1,
     borderBottomStyle: "solid",
-    borderBottomColor: "#1f2937",
+    borderBottomColor: "var(--border)",
+  },
+
+  navMobile: {
+    padding: "12px 16px",
   },
 
   spacer: {
     height: 73,
   },
 
+  spacerMobile: {
+    height: 62,
+  },
+
   brand: {
     fontSize: 20,
     fontWeight: 800,
-    color: "#fff",
+    color: "var(--foreground)",
     cursor: "pointer",
+  },
+
+  brandMobile: {
+    fontSize: 16,
   },
 
   menu: {
@@ -165,9 +328,9 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: 12,
     borderWidth: 1,
     borderStyle: "solid",
-    borderColor: "#1f2937",
-    backgroundColor: "#0f172a",
-    color: "#e5e7eb",
+    borderColor: "var(--nav-button-border)",
+    backgroundColor: "var(--nav-button-bg)",
+    color: "var(--nav-button-text)",
     fontSize: 22,
     cursor: "pointer",
     lineHeight: 1,
@@ -191,10 +354,10 @@ const styles: Record<string, React.CSSProperties> = {
     height: "100vh",
     zIndex: 1200,
     padding: "90px 16px 20px",
-    background: "#020617",
+    background: "var(--surface)",
     borderLeftWidth: 1,
     borderLeftStyle: "solid",
-    borderLeftColor: "#1f2937",
+    borderLeftColor: "var(--border)",
     transform: "translateX(100%)",
     transition: "transform 0.24s ease",
     display: "flex",
@@ -220,52 +383,187 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: 10,
     borderWidth: 1,
     borderStyle: "solid",
-    borderColor: "#1f2937",
-    background: "#0f172a",
-    color: "#e5e7eb",
+    borderColor: "var(--nav-button-border)",
+    background: "var(--nav-button-bg)",
+    color: "var(--nav-button-text)",
     textAlign: "left",
     fontSize: 16,
     cursor: "pointer",
   },
 
   drawerActive: {
-    background: "#1d4ed8",
-    borderColor: "#2563eb",
-    color: "#ffffff",
+    background: "var(--nav-button-active)",
+    borderColor: "var(--nav-button-active-border)",
+    color: "var(--nav-button-active-text)",
   },
 
   drawerLogout: {
-    marginTop: 8,
-    background: "#7f1d1d",
-    borderColor: "#991b1b",
-    color: "#ffffff",
+    marginTop: 10,
+    background: "var(--danger-bg)",
+    borderColor: "var(--danger-border)",
+    color: "var(--danger-text)",
+  },
+
+  accountWrap: {
+    position: "relative",
+  },
+
+  accountDropdown: {
+    position: "absolute",
+    right: 0,
+    top: 44,
+    minWidth: 240,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderStyle: "solid",
+    borderColor: "var(--border)",
+    background: "var(--account-dropdown-bg)",
+    padding: 10,
+    display: "flex",
+    flexDirection: "column",
+    gap: 10,
+    boxShadow: "0 12px 34px rgba(0,0,0,0.45)",
+    zIndex: 1500,
+  },
+
+  emailTag: {
+    display: "inline-block",
+    maxWidth: 220,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+    padding: "6px 10px",
+    borderRadius: 999,
+    borderWidth: 1,
+    borderStyle: "solid",
+    borderColor: "rgba(147, 197, 253, 0.5)",
+    color: "var(--account-email-text)",
+    background: "var(--account-email-bg)",
+    fontSize: 12,
+  },
+
+  accountIconBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderStyle: "solid",
+    borderColor: "var(--nav-button-border)",
+    backgroundColor: "var(--nav-button-bg)",
+    color: "var(--nav-button-text)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    fontSize: 18,
+    transition: "all 0.2s ease",
+  },
+
+  accountIconBtnActive: {
+    backgroundColor: "var(--nav-button-active)",
+    borderColor: "var(--nav-button-active-border)",
+    color: "var(--nav-button-active-text)",
+  },
+
+  accountIcon: {
+    lineHeight: 1,
+  },
+
+  accountLogoutBtn: {
+    width: "100%",
+    textAlign: "center",
   },
 
   button: {
     padding: "8px 16px",
     borderRadius: 999,
-    backgroundColor: "#111827",
-    color: "#e5e7eb",
+    backgroundColor: "var(--nav-button-bg)",
+    color: "var(--nav-button-text)",
     cursor: "pointer",
     fontSize: 14,
 
     /* 👇 IMPORTANT: no shorthand border */
     borderWidth: 1,
     borderStyle: "solid",
-    borderColor: "#1f2937",
+    borderColor: "var(--nav-button-border)",
 
     transition: "all 0.2s ease",
   },
 
   activeButton: {
-    backgroundColor: "#2563eb",
-    borderColor: "#2563eb",
-    color: "#ffffff",
+    backgroundColor: "var(--nav-button-active)",
+    borderColor: "var(--nav-button-active-border)",
+    color: "var(--nav-button-active-text)",
   },
 
   logout: {
-    backgroundColor: "#7f1d1d",
-    borderColor: "#991b1b",
-    color: "#ffffff",
+    backgroundColor: "var(--danger-bg)",
+    borderColor: "var(--danger-border)",
+    color: "var(--danger-text)",
+  },
+
+  mobileAccountBlock: {
+    marginTop: 10,
+    borderTopWidth: 1,
+    borderTopStyle: "solid",
+    borderTopColor: "var(--border)",
+    paddingTop: 10,
+  },
+
+  mobileAccountTitle: {
+    margin: "0 0 8px",
+    color: "#94a3b8",
+    fontSize: 12,
+    letterSpacing: 1,
+    textTransform: "uppercase",
+  },
+
+  mobileEmailTag: {
+    display: "inline-block",
+    maxWidth: "100%",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+    padding: "6px 10px",
+    borderRadius: 999,
+    borderWidth: 1,
+    borderStyle: "solid",
+    borderColor: "rgba(147, 197, 253, 0.5)",
+    color: "var(--account-email-text)",
+    background: "var(--account-email-bg)",
+    fontSize: 12,
+  },
+
+  themeToggleWrap: {
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 4,
+  },
+
+  themeToggleWrapMobile: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 10,
+  },
+
+  themeToggleBtn: {
+    padding: "8px 12px",
+    borderRadius: 999,
+    borderWidth: 1,
+    borderStyle: "solid",
+    borderColor: "var(--nav-button-border)",
+    backgroundColor: "var(--nav-button-bg)",
+    color: "var(--nav-button-text)",
+    fontSize: 13,
+    fontWeight: 600,
+    cursor: "pointer",
+  },
+
+  themeToggleBtnActive: {
+    backgroundColor: "var(--nav-button-active)",
+    borderColor: "var(--nav-button-active-border)",
+    color: "var(--nav-button-active-text)",
   },
 };
