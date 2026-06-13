@@ -238,36 +238,6 @@
   transform: none;
 }
 
-.answerStack {
-  display: grid;
-  gap: 10px;
-  margin-top: 18px;
-}
-
-.answerChip {
-  display: flex;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 12px 14px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: var(--surface);
-}
-
-.answerChip span:first-child {
-  color: var(--text-soft);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.answerChip span:last-child {
-  color: var(--foreground);
-  font-weight: 800;
-  text-align: right;
-}
-
 .resultsPanel {
   padding: 18px;
 }

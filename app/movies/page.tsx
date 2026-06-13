@@ -1217,15 +1217,6 @@ export default function MoviesPage() {
                 {step === QUESTIONS.length - 1 ? "Show suggestions" : "Next"}
               </button>
             </div>
-
-            <div className={styles.answerStack}>
-              {QUESTIONS.map((question) => (
-                <div key={question.key} className={styles.answerChip}>
-                  <span>{question.key}</span>
-                  <span>{answers[question.key] || "Pending"}</span>
-                </div>
-              ))}
-            </div>
           </div>
 
           <div className={`${styles.panel} ${styles.resultsPanel}`}>
