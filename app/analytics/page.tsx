@@ -70,6 +70,7 @@ const SECTION_LABELS: Record<string, string> = {
   visualize: "Visualise",
   movies: "Movies",
   case_studies: "Case Studies",
+  resources: "Resources",
   analytics: "Analytics",
 };
 

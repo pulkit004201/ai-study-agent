@@ -84,6 +84,7 @@ export default function Navbar() {
     { label: "Visualise", path: "/visualize" },
     { label: "Movies", path: "/movies" },
     { label: "Quiz", path: "/quiz" },
+    { label: "Resources", path: "/resources" },
   ];
   if (canViewAnalytics) {
     navItems.splice(3, 0, { label: "Analytics", path: "/analytics" });

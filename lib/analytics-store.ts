@@ -9,6 +9,7 @@ export type AnalyticsModule =
   | "visualize"
   | "movies"
   | "case_studies"
+  | "resources"
   | "analytics";
 
 export type AnalyticsEvent = {
@@ -44,6 +45,7 @@ const MODULES: AnalyticsModule[] = [
   "visualize",
   "movies",
   "case_studies",
+  "resources",
   "analytics",
 ];
 
@@ -69,6 +71,7 @@ function createEmptySections(): Record<AnalyticsModule, SectionStats> {
     visualize: createEmptySectionStats(),
     movies: createEmptySectionStats(),
     case_studies: createEmptySectionStats(),
+    resources: createEmptySectionStats(),
     analytics: createEmptySectionStats(),
   };
 }
@@ -139,7 +142,7 @@ async function ensureSchema() {
       await sql`
         alter table analytics_events
         add constraint analytics_events_module_check
-        check (module is null or module in ('dashboard', 'learn', 'quiz', 'visualize', 'movies', 'case_studies', 'analytics'))
+        check (module is null or module in ('dashboard', 'learn', 'quiz', 'visualize', 'movies', 'case_studies', 'resources', 'analytics'))
       `;
 
       await sql`
@@ -260,6 +263,7 @@ export async function getSummary(from?: string, to?: string) {
     visualize: new Set(),
     movies: new Set(),
     case_studies: new Set(),
+    resources: new Set(),
     analytics: new Set(),
   };
 
