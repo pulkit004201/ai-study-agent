@@ -1,9 +1,31 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSectionAnalytics } from "@/lib/use-section-analytics";
 import styles from "./page.module.css";
+
+// Unified shape rendered in the results panel — fed by either the live TMDB
+// API or the curated fallback list.
+type DisplaySuggestion = {
+  id: string;
+  title: string;
+  year: number | null;
+  posterUrl: string;
+  reason: string;
+  tags: string[];
+  metaLabel: string;
+};
+
+type ApiSuggestion = {
+  id: string;
+  title: string;
+  year: number | null;
+  posterUrl: string;
+  reason: string;
+  tags: string[];
+  rating: number | null;
+};
 
 type Region = "Hollywood" | "Bollywood";
 type AnswerKey = "mood" | "pace" | "company" | "era";
@@ -1199,15 +1221,23 @@ function varietyHash(input: string) {
   return hash >>> 0;
 }
 
-function MoviePoster({ movie }: { movie: Movie }) {
+function MoviePoster({
+  posterUrl,
+  title,
+  year,
+}: {
+  posterUrl: string;
+  title: string;
+  year: number | null;
+}) {
   const [failed, setFailed] = useState(false);
 
-  if (!movie.posterUrl || failed) {
+  if (!posterUrl || failed) {
     return (
       <div className={styles.poster}>
         <div className={styles.posterFallback}>
-          <span className={styles.posterFallbackTitle}>{movie.title}</span>
-          <span className={styles.posterFallbackYear}>{movie.year}</span>
+          <span className={styles.posterFallbackTitle}>{title}</span>
+          {year != null && <span className={styles.posterFallbackYear}>{year}</span>}
         </div>
       </div>
     );
@@ -1216,8 +1246,8 @@ function MoviePoster({ movie }: { movie: Movie }) {
   return (
     <div className={styles.poster}>
       <Image
-        src={movie.posterUrl}
-        alt={`${movie.title} official movie poster`}
+        src={posterUrl}
+        alt={`${title} movie poster`}
         fill
         sizes="(max-width: 560px) 100vw, 260px"
         className={styles.posterImage}
@@ -1264,7 +1294,62 @@ export default function MoviesPage() {
       })
       .slice(0, 6);
   }, [answers, region]);
-  const activeSuggestion = recommendations[suggestionIndex] ?? recommendations[0];
+
+  const [apiSuggestions, setApiSuggestions] = useState<ApiSuggestion[] | null>(null);
+  const [apiLoading, setApiLoading] = useState(false);
+
+  const allAnswered = answeredCount === QUESTIONS.length;
+  const answersKey = QUESTIONS.map((question) => answers[question.key]).join("|");
+
+  // Fetch live TMDB picks once the quiz is complete; fall back silently to the
+  // curated list if the API is unconfigured or returns nothing.
+  useEffect(() => {
+    if (!allAnswered) {
+      setApiSuggestions(null);
+      return;
+    }
+    const controller = new AbortController();
+    const params = new URLSearchParams({ region, ...answers });
+    setApiLoading(true);
+    fetch(`/api/movies/discover?${params.toString()}`, { signal: controller.signal })
+      .then((res) => res.json())
+      .then((data) => {
+        setApiSuggestions(
+          Array.isArray(data.results) && data.results.length ? data.results : null
+        );
+      })
+      .catch(() => setApiSuggestions(null))
+      .finally(() => setApiLoading(false));
+    return () => controller.abort();
+  }, [allAnswered, region, answersKey, answers]);
+
+  const displaySuggestions = useMemo<DisplaySuggestion[]>(() => {
+    if (apiSuggestions && apiSuggestions.length) {
+      return apiSuggestions.map((s) => ({
+        id: s.id,
+        title: s.title,
+        year: s.year,
+        posterUrl: s.posterUrl,
+        reason: s.reason,
+        tags: s.tags,
+        metaLabel: [s.year, s.rating ? `⭐ ${s.rating.toFixed(1)}` : null]
+          .filter(Boolean)
+          .join(" · "),
+      }));
+    }
+    return recommendations.map((r) => ({
+      id: r.movie.title,
+      title: r.movie.title,
+      year: r.movie.year,
+      posterUrl: r.movie.posterUrl,
+      reason: r.movie.reason,
+      tags: r.movie.tags,
+      metaLabel: `${r.movie.year} · ${r.matches}/${QUESTIONS.length} match`,
+    }));
+  }, [apiSuggestions, recommendations]);
+
+  const activeSuggestion =
+    displaySuggestions[suggestionIndex] ?? displaySuggestions[0];
 
   function selectRegion(nextRegion: Region) {
     if (nextRegion === region) return;
@@ -1303,13 +1388,13 @@ export default function MoviesPage() {
 
   function showPreviousSuggestion() {
     setSuggestionIndex((prev) =>
-      prev === 0 ? recommendations.length - 1 : prev - 1
+      prev === 0 ? displaySuggestions.length - 1 : prev - 1
     );
   }
 
   function showNextSuggestion() {
     setSuggestionIndex((prev) =>
-      prev + 1 >= recommendations.length ? 0 : prev + 1
+      prev + 1 >= displaySuggestions.length ? 0 : prev + 1
     );
   }
 
@@ -1413,12 +1498,16 @@ export default function MoviesPage() {
                   </p>
                 </div>
               </div>
-            ) : recommendations.length === 0 ? (
+            ) : displaySuggestions.length === 0 ? (
               <div className={styles.emptyState}>
                 <div>
-                  <p className={styles.emptyTitle}>No {region} matches for this style.</p>
+                  <p className={styles.emptyTitle}>
+                    {apiLoading ? "Finding picks…" : `No ${region} matches for this style.`}
+                  </p>
                   <p className={styles.emptyText}>
-                    Try a different release style — or switch library — to see suggestions.
+                    {apiLoading
+                      ? "Matching your mood, pace, and release style."
+                      : "Try a different release style — or switch library — to see suggestions."}
                   </p>
                 </div>
               </div>
@@ -1429,27 +1518,26 @@ export default function MoviesPage() {
                     <div className={styles.resultsHeader}>
                       <h2>{region} suggestion</h2>
                       <span className={styles.matchBadge}>
-                        {suggestionIndex + 1} of {recommendations.length}
+                        {suggestionIndex + 1} of {displaySuggestions.length}
                       </span>
                     </div>
 
                     <article className={styles.featuredMovie}>
                       <MoviePoster
-                        key={activeSuggestion.movie.title}
-                        movie={activeSuggestion.movie}
+                        key={activeSuggestion.id}
+                        posterUrl={activeSuggestion.posterUrl}
+                        title={activeSuggestion.title}
+                        year={activeSuggestion.year}
                       />
 
                       <div className={styles.movieDetails}>
                         <div className={styles.movieTopline}>
-                          <h3 className={styles.movieTitle}>{activeSuggestion.movie.title}</h3>
-                          <span className={styles.movieMeta}>
-                            {activeSuggestion.movie.year} · {activeSuggestion.matches}/
-                            {QUESTIONS.length} match
-                          </span>
+                          <h3 className={styles.movieTitle}>{activeSuggestion.title}</h3>
+                          <span className={styles.movieMeta}>{activeSuggestion.metaLabel}</span>
                         </div>
-                        <p className={styles.movieReason}>{activeSuggestion.movie.reason}</p>
+                        <p className={styles.movieReason}>{activeSuggestion.reason}</p>
                         <div className={styles.tagRow}>
-                          {activeSuggestion.movie.tags.map((tag) => (
+                          {activeSuggestion.tags.map((tag) => (
                             <span key={tag} className={styles.tag}>
                               {tag}
                             </span>
