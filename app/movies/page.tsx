@@ -68,7 +68,7 @@ const MOVIES: Movie[] = [
     mood: ["Thrilling", "Feel-good"],
     pace: ["Fast and gripping", "Easy watch"],
     company: ["Friends", "Family", "Date night"],
-    era: ["Recent"],
+    era: ["Modern classic"],
     tags: ["Mystery", "Comedy", "Ensemble"],
     reason: "A polished mystery with playful tension, memorable characters, and a pace that keeps everyone involved.",
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/1/1f/Knives_Out_poster.jpeg",
@@ -140,7 +140,7 @@ const MOVIES: Movie[] = [
     mood: ["Emotional", "Feel-good"],
     pace: ["Easy watch"],
     company: ["Date night", "Solo"],
-    era: ["Recent"],
+    era: ["Modern classic"],
     tags: ["Musical", "Romance", "Dreams"],
     reason: "A stylish romantic musical that balances brightness, ambition, and bittersweet emotion.",
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/a/ab/La_La_Land_%28film%29.png",
@@ -164,7 +164,7 @@ const MOVIES: Movie[] = [
     mood: ["Thrilling"],
     pace: ["Fast and gripping"],
     company: ["Friends", "Solo", "Date night"],
-    era: ["Recent"],
+    era: ["Modern classic"],
     tags: ["Thriller", "Dark comedy", "Twists"],
     reason: "A clever thriller with sharp turns, wicked humor, and a compact rhythm.",
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/4/47/Andhadhun_poster.jpg",
@@ -188,7 +188,7 @@ const MOVIES: Movie[] = [
     mood: ["Emotional", "Feel-good"],
     pace: ["Big spectacle", "Fast and gripping"],
     company: ["Family"],
-    era: ["Recent"],
+    era: ["Modern classic"],
     tags: ["Sports", "Family", "Inspiring"],
     reason: "A strong family sports drama with clear stakes, training arcs, and a big emotional payoff.",
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/9/99/Dangal_Poster.jpg",
@@ -236,7 +236,7 @@ const MOVIES: Movie[] = [
     mood: ["Feel-good", "Thought-provoking"],
     pace: ["Fast and gripping"],
     company: ["Friends", "Solo"],
-    era: ["Recent"],
+    era: ["Modern classic"],
     tags: ["Music", "Ambition", "Drama"],
     reason: "A kinetic ambition story with strong music, social texture, and a satisfying rise.",
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/0/07/Gully_Boy_poster.jpg",
@@ -368,7 +368,7 @@ const MOVIES: Movie[] = [
     mood: ["Feel-good", "Thrilling"],
     pace: ["Fast and gripping", "Big spectacle"],
     company: ["Family", "Friends"],
-    era: ["Recent"],
+    era: ["Modern classic"],
     tags: ["Animation", "Comic-book", "Stylish"],
     reason: "A dazzling, kinetic animated take that feels fresh from frame one.",
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/f/fa/Spider-Man_Into_the_Spider-Verse_poster.png",
@@ -380,7 +380,7 @@ const MOVIES: Movie[] = [
     mood: ["Thrilling", "Emotional"],
     pace: ["Big spectacle"],
     company: ["Friends", "Family"],
-    era: ["Recent"],
+    era: ["Modern classic"],
     tags: ["Action", "Comic-book", "Finale"],
     reason: "A massive crowd-pleasing finale that pays off years of buildup.",
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/0/0d/Avengers_Endgame_poster.jpg",
@@ -404,7 +404,7 @@ const MOVIES: Movie[] = [
     mood: ["Thought-provoking", "Thrilling"],
     pace: ["Big spectacle", "Slow burn"],
     company: ["Solo", "Friends"],
-    era: ["Recent"],
+    era: ["Modern classic"],
     tags: ["Sci-fi", "Epic", "Visual"],
     reason: "A stunning, immersive sci-fi epic built for the biggest screen you have.",
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/8/8e/Dune_%282021_film%29.jpg",
@@ -476,7 +476,7 @@ const MOVIES: Movie[] = [
     mood: ["Thrilling", "Emotional"],
     pace: ["Big spectacle", "Fast and gripping"],
     company: ["Solo", "Friends"],
-    era: ["Recent"],
+    era: ["Modern classic"],
     tags: ["War", "Survival", "One-shot"],
     reason: "A breathless, immersive war mission shot to feel like one take.",
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/f/fe/1917_%282019%29_Film_Poster.jpeg",
@@ -488,7 +488,7 @@ const MOVIES: Movie[] = [
     mood: ["Thought-provoking", "Emotional"],
     pace: ["Slow burn"],
     company: ["Solo"],
-    era: ["Recent"],
+    era: ["Modern classic"],
     tags: ["Drama", "Character study", "Dark"],
     reason: "A bleak, magnetic character study carried by a transformative lead.",
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/e/e1/Joker_%282019_film%29_poster.jpg",
@@ -584,7 +584,7 @@ const MOVIES: Movie[] = [
     mood: ["Thrilling", "Feel-good"],
     pace: ["Fast and gripping"],
     company: ["Friends", "Family"],
-    era: ["Recent"],
+    era: ["Modern classic"],
     tags: ["Sports", "Racing", "Underdog"],
     reason: "A slick, satisfying racing drama with great chemistry and momentum.",
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/a/a4/Ford_v._Ferrari_%282019_film_poster%29.png",
@@ -596,7 +596,7 @@ const MOVIES: Movie[] = [
     mood: ["Thrilling"],
     pace: ["Fast and gripping"],
     company: ["Friends", "Date night"],
-    era: ["Recent"],
+    era: ["Modern classic"],
     tags: ["Horror", "Survival", "Tense"],
     reason: "A taut, inventive survival horror that weaponizes silence.",
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/a/a0/A_Quiet_Place_film_poster.png",
@@ -752,7 +752,7 @@ const MOVIES: Movie[] = [
     mood: ["Thought-provoking", "Thrilling"],
     pace: ["Slow burn"],
     company: ["Solo", "Friends"],
-    era: ["Recent"],
+    era: ["Modern classic"],
     tags: ["Crime", "Social", "Drama"],
     reason: "A tense, unflinching procedural with a strong social conscience.",
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/1/11/Article_15_Poster.jpg",
@@ -836,7 +836,7 @@ const MOVIES: Movie[] = [
     mood: ["Feel-good", "Thrilling"],
     pace: ["Easy watch"],
     company: ["Friends"],
-    era: ["Recent"],
+    era: ["Modern classic"],
     tags: ["Horror comedy", "Fun", "Folk"],
     reason: "A fun horror-comedy that balances scares with genuine laughs.",
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/4/4f/Stree_-_2018_Movie_Poster.jpg",
@@ -848,7 +848,7 @@ const MOVIES: Movie[] = [
     mood: ["Feel-good", "Emotional"],
     pace: ["Easy watch"],
     company: ["Family"],
-    era: ["Recent"],
+    era: ["Modern classic"],
     tags: ["Comedy", "Family", "Warm"],
     reason: "A warm, funny family comedy with a refreshingly honest premise.",
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/f/f5/Badhaai_Ho_Official_Poster.jpg",
@@ -860,7 +860,7 @@ const MOVIES: Movie[] = [
     mood: ["Thrilling", "Emotional"],
     pace: ["Fast and gripping", "Slow burn"],
     company: ["Solo", "Family"],
-    era: ["Recent"],
+    era: ["Modern classic"],
     tags: ["Spy", "Drama", "Tense"],
     reason: "A tense, emotionally grounded spy drama with a strong central turn.",
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/2/2f/Raazi_-_Poster.jpg",
@@ -872,7 +872,7 @@ const MOVIES: Movie[] = [
     mood: ["Thrilling"],
     pace: ["Big spectacle", "Fast and gripping"],
     company: ["Friends", "Family"],
-    era: ["Recent"],
+    era: ["Modern classic"],
     tags: ["Action", "War", "Patriotic"],
     reason: "A high-octane military action film with a steady forward drive.",
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/3/3b/URI_-_New_poster.jpg",
@@ -1021,12 +1021,23 @@ function getInitialAnswers(): Record<AnswerKey, string> {
   };
 }
 
+// "Recent" is defined strictly by release year (current-year films) rather
+// than a static tag, so older movies can never count as Recent.
+const RECENT_FROM_YEAR = 2026;
+
+function movieMatches(movie: Movie, key: AnswerKey, value: string) {
+  if (key === "era" && value === "Recent") {
+    return movie.year >= RECENT_FROM_YEAR;
+  }
+  return movie[key].includes(value);
+}
+
 // How many of the answered questions this movie matches (integer, for display).
 function matchCount(movie: Movie, answers: Record<AnswerKey, string>) {
   return QUESTIONS.reduce((count, question) => {
     const value = answers[question.key];
     if (!value) return count;
-    return movie[question.key].includes(value) ? count + 1 : count;
+    return movieMatches(movie, question.key, value) ? count + 1 : count;
   }, 0);
 }
 
@@ -1038,7 +1049,9 @@ function rankScore(movie: Movie, answers: Record<AnswerKey, string>) {
     const value = answers[question.key];
     if (!value) return score;
     const options = movie[question.key];
-    return options.includes(value) ? score + 1 / options.length : score;
+    return movieMatches(movie, question.key, value)
+      ? score + 1 / options.length
+      : score;
   }, 0);
 }
 
