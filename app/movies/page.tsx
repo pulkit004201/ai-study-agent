@@ -1242,7 +1242,13 @@ export default function MoviesPage() {
 
   const recommendations = useMemo(() => {
     const answersKey = QUESTIONS.map((question) => answers[question.key]).join("|");
-    return MOVIES.filter((movie) => movie.region === region)
+    return MOVIES.filter(
+      (movie) =>
+        movie.region === region &&
+        // Release style is a hard filter: e.g. "Recent" restricts the pool to
+        // 2026+ films so it never surfaces older movies.
+        (!answers.era || movieMatches(movie, "era", answers.era))
+    )
       .map((movie) => ({
         movie,
         matches: matchCount(movie, answers),
@@ -1404,6 +1410,15 @@ export default function MoviesPage() {
                   <p className={styles.emptyText}>
                     {answeredCount} of {QUESTIONS.length} selected — the agent compares your
                     answers with mood, pace, company, and release-style signals.
+                  </p>
+                </div>
+              </div>
+            ) : recommendations.length === 0 ? (
+              <div className={styles.emptyState}>
+                <div>
+                  <p className={styles.emptyTitle}>No {region} matches for this style.</p>
+                  <p className={styles.emptyText}>
+                    Try a different release style — or switch library — to see suggestions.
                   </p>
                 </div>
               </div>
