@@ -209,9 +209,21 @@
 
 .actions {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
   margin-top: 22px;
+}
+
+.actionHint {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 13px;
+}
+
+.secondaryButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
 }
 
 .secondaryButton,

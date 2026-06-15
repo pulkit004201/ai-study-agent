@@ -1010,6 +1010,139 @@ const MOVIES: Movie[] = [
     posterUrl: "https://upload.wikimedia.org/wikipedia/en/5/5d/My_Name_Is_Khan_film_poster.jpg",
   },
 
+  {
+    title: "Avengers: Doomsday",
+    year: 2026,
+    region: "Hollywood",
+    mood: ["Thrilling", "Emotional"],
+    pace: ["Big spectacle", "Fast and gripping"],
+    company: ["Friends", "Family"],
+    era: ["Recent"],
+    tags: ["Action", "Comic-book", "Epic"],
+    reason: "The next blockbuster Avengers chapter \u2014 huge scale and ensemble stakes.",
+    posterUrl: "https://upload.wikimedia.org/wikipedia/en/e/ee/Avengers_Doomsday_poster.jpg",
+  },
+  {
+    title: "Spider-Man: Brand New Day",
+    year: 2026,
+    region: "Hollywood",
+    mood: ["Thrilling", "Feel-good"],
+    pace: ["Fast and gripping", "Big spectacle"],
+    company: ["Friends", "Family"],
+    era: ["Recent"],
+    tags: ["Action", "Comic-book", "Fun"],
+    reason: "A fresh Spider-Man outing with energy, heart, and big set pieces.",
+    posterUrl: "https://upload.wikimedia.org/wikipedia/en/9/9a/Spider-Man_Brand_New_Day_poster.jpg",
+  },
+  {
+    title: "The Mandalorian and Grogu",
+    year: 2026,
+    region: "Hollywood",
+    mood: ["Thrilling", "Feel-good"],
+    pace: ["Big spectacle"],
+    company: ["Family", "Friends"],
+    era: ["Recent"],
+    tags: ["Sci-fi", "Adventure", "Star Wars"],
+    reason: "The Mandalorian hits the big screen with adventure and warmth.",
+    posterUrl: "https://upload.wikimedia.org/wikipedia/en/4/4c/The_Mandalorian_and_Grogu_poster.jpg",
+  },
+  {
+    title: "Project Hail Mary",
+    year: 2026,
+    region: "Hollywood",
+    mood: ["Thought-provoking", "Thrilling"],
+    pace: ["Big spectacle", "Fast and gripping"],
+    company: ["Solo", "Friends"],
+    era: ["Recent"],
+    tags: ["Sci-fi", "Space", "Survival"],
+    reason: "A high-concept space survival story built on smart problem-solving.",
+    posterUrl: "https://upload.wikimedia.org/wikipedia/en/3/3b/Project_Hail_Mary_poster.jpg",
+  },
+  {
+    title: "Toy Story 5",
+    year: 2026,
+    region: "Hollywood",
+    mood: ["Feel-good", "Emotional"],
+    pace: ["Easy watch"],
+    company: ["Family"],
+    era: ["Recent"],
+    tags: ["Animation", "Family", "Heart"],
+    reason: "The toys return for another warm, all-ages adventure.",
+    posterUrl: "https://upload.wikimedia.org/wikipedia/en/0/08/Toy_Story_5_poster.jpg",
+  },
+  {
+    title: "Dune: Part Three",
+    year: 2026,
+    region: "Hollywood",
+    mood: ["Thought-provoking", "Thrilling"],
+    pace: ["Big spectacle", "Slow burn"],
+    company: ["Solo", "Friends"],
+    era: ["Recent"],
+    tags: ["Sci-fi", "Epic", "Visual"],
+    reason: "The next stunning chapter of the Dune saga, built for the biggest screen.",
+    posterUrl: "https://upload.wikimedia.org/wikipedia/en/7/7b/Dune_Part_Three_poster.jpg",
+  },
+  {
+    title: "Supergirl",
+    year: 2026,
+    region: "Hollywood",
+    mood: ["Thrilling", "Feel-good"],
+    pace: ["Big spectacle", "Fast and gripping"],
+    company: ["Friends", "Family"],
+    era: ["Recent"],
+    tags: ["Action", "Comic-book", "Adventure"],
+    reason: "A bold new big-screen take on Supergirl with spectacle and spirit.",
+    posterUrl: "https://upload.wikimedia.org/wikipedia/en/5/58/Supergirl_%282026_film%29_poster.jpg",
+  },
+  {
+    title: "The Super Mario Galaxy Movie",
+    year: 2026,
+    region: "Hollywood",
+    mood: ["Feel-good"],
+    pace: ["Easy watch", "Big spectacle"],
+    company: ["Family"],
+    era: ["Recent"],
+    tags: ["Animation", "Adventure", "Fun"],
+    reason: "A colourful, playful animated romp the whole family can enjoy.",
+    posterUrl: "https://upload.wikimedia.org/wikipedia/en/b/bf/The_Super_Mario_Galaxy_Movie_poster.jpeg",
+  },
+  {
+    title: "King",
+    year: 2026,
+    region: "Bollywood",
+    mood: ["Thrilling"],
+    pace: ["Fast and gripping", "Big spectacle"],
+    company: ["Friends", "Family"],
+    era: ["Recent"],
+    tags: ["Action", "Drama", "Star vehicle"],
+    reason: "A high-energy action drama anchored by a marquee lead.",
+    posterUrl: "https://upload.wikimedia.org/wikipedia/en/f/fd/King_%28Hindi_film%29.jpg",
+  },
+  {
+    title: "Border 2",
+    year: 2026,
+    region: "Bollywood",
+    mood: ["Thrilling", "Emotional"],
+    pace: ["Big spectacle", "Fast and gripping"],
+    company: ["Family", "Friends"],
+    era: ["Recent"],
+    tags: ["War", "Action", "Patriotic"],
+    reason: "A big-canvas war film following the legacy of the original Border.",
+    posterUrl: "https://upload.wikimedia.org/wikipedia/en/2/26/Border_2_Poster.jpg",
+  },
+  {
+    title: "Alpha",
+    year: 2026,
+    region: "Bollywood",
+    mood: ["Thrilling"],
+    pace: ["Fast and gripping", "Big spectacle"],
+    company: ["Friends", "Solo"],
+    era: ["Recent"],
+    tags: ["Action", "Spy", "Thriller"],
+    reason: "A slick spy-action entry with a fresh lead duo.",
+    posterUrl: "https://upload.wikimedia.org/wikipedia/en/0/0d/Alpha_official_poster.JPG",
+  },
+
 ];
 
 function getInitialAnswers(): Record<AnswerKey, string> {
@@ -1135,27 +1268,23 @@ export default function MoviesPage() {
   }
 
   function selectAnswer(value: string) {
-    if (answers[currentQuestion.key] === value) return;
-    setAnswers((prev) => ({
-      ...prev,
-      [currentQuestion.key]: value,
-    }));
-    // Keep results visible so changing an option refreshes the suggestions live.
+    const key = currentQuestion.key;
+    const nextAnswers = { ...answers, [key]: value };
+    setAnswers(nextAnswers);
     setSuggestionIndex(0);
-  }
 
-  function goNext() {
-    if (!answers[currentQuestion.key]) return;
-    if (step === QUESTIONS.length - 1) {
+    // Only reveal the shortlist once every question has an answer.
+    const allAnswered = QUESTIONS.every((question) => nextAnswers[question.key]);
+    if (allAnswered) {
       setShowResults(true);
-      setSuggestionIndex(0);
-      return;
     }
-    setStep((prev) => prev + 1);
+    // Auto-advance to the next question — no manual "Next" needed.
+    if (step < QUESTIONS.length - 1) {
+      setStep((prev) => prev + 1);
+    }
   }
 
   function goBack() {
-    setShowResults(false);
     setStep((prev) => Math.max(0, prev - 1));
   }
 
@@ -1251,17 +1380,17 @@ export default function MoviesPage() {
             </div>
 
             <div className={styles.actions}>
-              <button type="button" className={styles.secondaryButton} onClick={goBack}>
-                Back
-              </button>
               <button
                 type="button"
-                className={styles.primaryButton}
-                onClick={goNext}
-                disabled={!answers[currentQuestion.key]}
+                className={styles.secondaryButton}
+                onClick={goBack}
+                disabled={step === 0}
               >
-                {step === QUESTIONS.length - 1 ? "Show suggestions" : "Next"}
+                Back
               </button>
+              <p className={styles.actionHint}>
+                Pick an option to continue automatically.
+              </p>
             </div>
           </div>
 
@@ -1269,9 +1398,12 @@ export default function MoviesPage() {
             {!showResults ? (
               <div className={styles.emptyState}>
                 <div>
-                  <p className={styles.emptyTitle}>Your shortlist will appear here.</p>
+                  <p className={styles.emptyTitle}>
+                    Answer all {QUESTIONS.length} questions to see your shortlist.
+                  </p>
                   <p className={styles.emptyText}>
-                    The agent compares your answers with mood, pace, company, and release-style signals.
+                    {answeredCount} of {QUESTIONS.length} selected — the agent compares your
+                    answers with mood, pace, company, and release-style signals.
                   </p>
                 </div>
               </div>
