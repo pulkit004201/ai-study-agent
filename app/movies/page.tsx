@@ -1021,12 +1021,36 @@ function getInitialAnswers(): Record<AnswerKey, string> {
   };
 }
 
-function scoreMovie(movie: Movie, answers: Record<AnswerKey, string>) {
+// How many of the answered questions this movie matches (integer, for display).
+function matchCount(movie: Movie, answers: Record<AnswerKey, string>) {
+  return QUESTIONS.reduce((count, question) => {
+    const value = answers[question.key];
+    if (!value) return count;
+    return movie[question.key].includes(value) ? count + 1 : count;
+  }, 0);
+}
+
+// Ranking score that rewards specificity: a match counts for less when the
+// movie is tagged with many values in that category, so broadly-tagged films
+// (e.g. Dangal) stop dominating every result set.
+function rankScore(movie: Movie, answers: Record<AnswerKey, string>) {
   return QUESTIONS.reduce((score, question) => {
     const value = answers[question.key];
     if (!value) return score;
-    return movie[question.key].includes(value) ? score + 1 : score;
+    const options = movie[question.key];
+    return options.includes(value) ? score + 1 / options.length : score;
   }, 0);
+}
+
+// Stable hash used to rotate tied movies based on the current answer set, so
+// changing a filter surfaces a different mix instead of the same newest films.
+function varietyHash(input: string) {
+  let hash = 2166136261;
+  for (let i = 0; i < input.length; i += 1) {
+    hash ^= input.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
 }
 
 function MoviePoster({ movie }: { movie: Movie }) {
@@ -1071,10 +1095,19 @@ export default function MoviesPage() {
   const progressPct = Math.round((answeredCount / QUESTIONS.length) * 100);
 
   const recommendations = useMemo(() => {
+    const answersKey = QUESTIONS.map((question) => answers[question.key]).join("|");
     return MOVIES.filter((movie) => movie.region === region)
-      .map((movie) => ({ movie, score: scoreMovie(movie, answers) }))
+      .map((movie) => ({
+        movie,
+        matches: matchCount(movie, answers),
+        score: rankScore(movie, answers),
+        order: varietyHash(`${movie.title}#${answersKey}`),
+      }))
       .sort((a, b) => {
         if (b.score !== a.score) return b.score - a.score;
+        // Tie-break with the answer-seeded hash so the mix rotates per
+        // selection; year is a final, deterministic fallback.
+        if (a.order !== b.order) return a.order - b.order;
         return b.movie.year - a.movie.year;
       })
       .slice(0, 6);
@@ -1250,7 +1283,7 @@ export default function MoviesPage() {
                         <div className={styles.movieTopline}>
                           <h3 className={styles.movieTitle}>{activeSuggestion.movie.title}</h3>
                           <span className={styles.movieMeta}>
-                            {activeSuggestion.movie.year} · {activeSuggestion.score}/
+                            {activeSuggestion.movie.year} · {activeSuggestion.matches}/
                             {QUESTIONS.length} match
                           </span>
                         </div>
