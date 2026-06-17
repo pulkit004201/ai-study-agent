@@ -143,117 +143,66 @@ export default function LoginPage() {
     };
   }, [googleClientId, router]);
 
-  function goGuest(path: string) {
+  function handleGuestMode() {
     if (typeof window !== "undefined") {
       localStorage.removeItem("userEmail");
       localStorage.removeItem("userName");
       localStorage.removeItem("userPicture");
     }
-    router.push(path);
-  }
-
-  function handleGuestMode() {
-    goGuest("/dashboard");
+    router.push("/dashboard");
   }
 
   return (
     <main className={styles.page}>
-      <div className={styles.grain} aria-hidden="true" />
+      <div className={styles.backdrop} />
 
       <section className={styles.hero}>
-        <p className={styles.eyebrow}>Product Intelligence Journal</p>
+        <p className={styles.eyebrow}>AI STUDY AGENT</p>
         <h1 className={styles.title}>
-          Learn AI through <span className={styles.accent}>systems</span>,{" "}
-          <span className={styles.accent}>signals</span>, and{" "}
-          <span className={styles.accentInk}>practice.</span>
+          Learn AI with
+          <span> structured practice and real-world thinking.</span>
         </h1>
         <p className={styles.description}>
-          AI Learn Hub is a focused workspace for execution-minded builders. Move
-          from first principles to applied case drills, visual concepts, and fast
-          quiz loops — all in one place.
+          Move from concepts to execution with guided lessons, scenario-based
+          case studies, and fast quiz loops.
         </p>
 
-        <div className={styles.ctaRow}>
-          <div className={styles.googleSlot}>
-            <div ref={googleBtnRef} style={{ minHeight: 44 }} />
-          </div>
-          <button className={styles.guestBtn} onClick={handleGuestMode}>
-            Explore as guest <span aria-hidden="true">→</span>
-          </button>
-        </div>
-
-        {!isGoogleReady && !error && !configError && (
-          <p className={styles.hint}>Loading Google Sign-In…</p>
-        )}
-        {(configError || error) && (
-          <p className={styles.error}>{configError || error}</p>
-        )}
-
-        <div className={styles.meta}>
-          <span>
-            <strong>4</strong> learning tracks
-          </span>
-          <span className={styles.metaDot} aria-hidden="true" />
-          <span>
-            <strong>20+</strong> quiz drills
-          </span>
-          <span className={styles.metaDot} aria-hidden="true" />
-          <span>
-            <strong>Curated</strong> case studies
-          </span>
+        <div className={styles.metrics}>
+          <Metric label="Learning tracks" value="4" />
+          <Metric label="Quiz questions" value="20+" />
+          <Metric label="Case studies" value="Curated" />
         </div>
       </section>
 
-      <aside className={styles.panel}>
-        <div className={styles.panelHead}>
-          <div className={styles.panelCount}>
-            <strong>{MODULES.length}</strong>
-            <span>/ {MODULES.length} modules</span>
-          </div>
-          <div className={styles.panelTags}>
-            <span className={styles.pill}>Full curriculum</span>
-            <span className={styles.live}>
-              <span className={styles.liveDot} aria-hidden="true" /> Live
-            </span>
-          </div>
+      <section className={styles.card}>
+        <span className={styles.badge}>WELCOME BACK</span>
+        <h2 className={styles.cardTitle}>Sign in and continue learning</h2>
+        <p className={styles.cardText}>
+          Use Google Sign-In to track your quiz answer history and progress.
+        </p>
+
+        <div className={styles.googleSlot}>
+          <div ref={googleBtnRef} style={{ minHeight: 44 }} />
         </div>
 
-        <div className={styles.panelBar} aria-hidden="true">
-          <span />
-        </div>
+        {!isGoogleReady && !error && !configError && (
+          <p className={styles.hint}>Loading Google Sign-In...</p>
+        )}
+        {(configError || error) && <p className={styles.error}>{configError || error}</p>}
 
-        <ul className={styles.modules}>
-          {MODULES.map((module, index) => (
-            <li key={module.path}>
-              <button
-                type="button"
-                className={styles.moduleRow}
-                onClick={() => goGuest(module.path)}
-              >
-                <span className={styles.moduleNum}>
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <span className={styles.moduleBody}>
-                  <span className={styles.moduleName}>{module.label}</span>
-                  <span className={styles.moduleNote}>{module.note}</span>
-                </span>
-                <span className={styles.moduleArrow} aria-hidden="true">
-                  →
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      </aside>
+        <button className={styles.secondaryBtn} onClick={handleGuestMode}>
+          Continue as Guest
+        </button>
+      </section>
     </main>
   );
 }
 
-const MODULES: { label: string; note: string; path: string }[] = [
-  { label: "Guided Lessons", note: "First principles to applied", path: "/learn" },
-  { label: "Visual Concepts", note: "See how the ideas connect", path: "/visualize" },
-  { label: "Quiz Drills", note: "Fast recall and feedback loops", path: "/quiz" },
-  { label: "Case Studies", note: "Real product scenarios", path: "/case-studies" },
-  { label: "Movie Agent", note: "A live recommender to study", path: "/movies" },
-  { label: "Resources", note: "Guides and playbooks", path: "/resources" },
-];
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className={styles.metric}>
+      <p className={styles.metricValue}>{value}</p>
+      <p className={styles.metricLabel}>{label}</p>
+    </div>
+  );
+}
