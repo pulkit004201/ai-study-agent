@@ -82,9 +82,13 @@ const TMDB_KEY = (
   ""
 ).trim();
 
+// A valid v4 token is a JWT with exactly three dot-separated segments; ignore
+// anything malformed (e.g. a truncated paste) so we can fall back to the key.
+const TOKEN_IS_VALID = TMDB_TOKEN.split(".").length === 3;
+
 function authHeaders(): HeadersInit | null {
-  // Prefer a v4 read access token; fall back to a v3 api key via query param.
-  if (TMDB_TOKEN) {
+  // Prefer a well-formed v4 token; otherwise fall back to a v3 key.
+  if (TOKEN_IS_VALID) {
     return { Authorization: `Bearer ${TMDB_TOKEN}`, accept: "application/json" };
   }
   return null;
