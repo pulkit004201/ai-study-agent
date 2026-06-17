@@ -137,20 +137,6 @@ export async function GET(request: Request) {
   }
 
   const { searchParams } = new URL(request.url);
-
-  // Temporary, secret-safe diagnostics: shape of the credential only.
-  if (searchParams.get("debug") === "1") {
-    return NextResponse.json({
-      hasToken: Boolean(TMDB_TOKEN),
-      tokenLen: TMDB_TOKEN.length,
-      tokenFirst6: TMDB_TOKEN.slice(0, 6),
-      tokenLast6: TMDB_TOKEN.slice(-6),
-      tokenDots: (TMDB_TOKEN.match(/\./g) || []).length,
-      hasKey: Boolean(TMDB_KEY),
-      keyLen: TMDB_KEY.length,
-    });
-  }
-
   const region: Region =
     searchParams.get("region") === "Bollywood" ? "Bollywood" : "Hollywood";
   const answers = {
