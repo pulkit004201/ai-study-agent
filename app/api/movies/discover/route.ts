@@ -94,12 +94,12 @@ function authHeaders(): HeadersInit | null {
   return null;
 }
 
-function buildParams(region: Region, answers: Record<string, string>) {
+function buildParams(region: Region, answers: Record<string, string>, page: number) {
   const params = new URLSearchParams({
     include_adult: "false",
     include_video: "false",
     language: "en-US",
-    page: "1",
+    page: String(page),
   });
 
   params.set("with_original_language", region === "Bollywood" ? "hi" : "en");
@@ -146,7 +146,10 @@ export async function GET(request: Request) {
     era: searchParams.get("era") || "",
   };
 
-  const params = buildParams(region, answers);
+  const pageParam = Number(searchParams.get("page") || "1");
+  const page = Number.isFinite(pageParam) ? Math.min(Math.max(pageParam, 1), 500) : 1;
+
+  const params = buildParams(region, answers, page);
   if (!headers && apiKey) params.set("api_key", apiKey);
 
   try {
@@ -157,14 +160,13 @@ export async function GET(request: Request) {
     });
     if (!res.ok) {
       return NextResponse.json(
-        { source: "error", status: res.status, results: [] },
+        { source: "error", status: res.status, page, totalPages: 0, results: [] },
         { status: 200 }
       );
     }
     const data = await res.json();
     const results: ApiSuggestion[] = (data.results || [])
       .filter((m: { poster_path?: string }) => m.poster_path)
-      .slice(0, 6)
       .map(
         (m: {
           id: number;
@@ -190,8 +192,16 @@ export async function GET(request: Request) {
         })
       );
 
-    return NextResponse.json({ source: "tmdb", results });
+    return NextResponse.json({
+      source: "tmdb",
+      page: data.page ?? page,
+      totalPages: Math.min(data.total_pages ?? 1, 500),
+      results,
+    });
   } catch {
-    return NextResponse.json({ source: "error", results: [] }, { status: 200 });
+    return NextResponse.json(
+      { source: "error", page, totalPages: 0, results: [] },
+      { status: 200 }
+    );
   }
 }

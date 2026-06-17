@@ -1,9 +1,25 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSectionAnalytics } from "@/lib/use-section-analytics";
 import styles from "./page.module.css";
+
+const SEEN_STORAGE_KEY = "movieSeenIds";
+
+function toDisplay(s: ApiSuggestion): DisplaySuggestion {
+  return {
+    id: s.id,
+    title: s.title,
+    year: s.year,
+    posterUrl: s.posterUrl,
+    reason: s.reason,
+    tags: s.tags,
+    metaLabel: [s.year, s.rating ? `⭐ ${s.rating.toFixed(1)}` : null]
+      .filter(Boolean)
+      .join(" · "),
+  };
+}
 
 // Unified shape rendered in the results panel — fed by either the live TMDB
 // API or the curated fallback list.
@@ -1295,50 +1311,58 @@ export default function MoviesPage() {
       .slice(0, 6);
   }, [answers, region]);
 
-  const [apiSuggestions, setApiSuggestions] = useState<ApiSuggestion[] | null>(null);
-  const [apiLoading, setApiLoading] = useState(false);
-
   const allAnswered = answeredCount === QUESTIONS.length;
   const answersKey = QUESTIONS.map((question) => answers[question.key]).join("|");
+  const filterKey = `${region}|${answersKey}`;
 
-  // Fetch live TMDB picks once the quiz is complete; fall back silently to the
-  // curated list if the API is unconfigured or returns nothing.
+  // De-duped, paginating stream of suggestions. `seenIds` persists across
+  // sessions so a movie never repeats in any form or order.
+  const [stream, setStream] = useState<DisplaySuggestion[]>([]);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const seenRef = useRef<Set<string>>(new Set());
+  const recommendationsRef = useRef(recommendations);
+  recommendationsRef.current = recommendations;
+
+  // Load the persisted "seen" set once on mount.
   useEffect(() => {
-    if (!allAnswered) {
-      setApiSuggestions(null);
-      return;
+    try {
+      const raw = localStorage.getItem(SEEN_STORAGE_KEY);
+      if (raw) seenRef.current = new Set(JSON.parse(raw));
+    } catch {
+      // ignore malformed storage
     }
-    const controller = new AbortController();
-    const params = new URLSearchParams({ region, ...answers });
-    setApiLoading(true);
-    fetch(`/api/movies/discover?${params.toString()}`, { signal: controller.signal })
-      .then((res) => res.json())
-      .then((data) => {
-        setApiSuggestions(
-          Array.isArray(data.results) && data.results.length ? data.results : null
-        );
-      })
-      .catch(() => setApiSuggestions(null))
-      .finally(() => setApiLoading(false));
-    return () => controller.abort();
-  }, [allAnswered, region, answersKey, answers]);
+  }, []);
 
-  const displaySuggestions = useMemo<DisplaySuggestion[]>(() => {
-    if (apiSuggestions && apiSuggestions.length) {
-      return apiSuggestions.map((s) => ({
-        id: s.id,
-        title: s.title,
-        year: s.year,
-        posterUrl: s.posterUrl,
-        reason: s.reason,
-        tags: s.tags,
-        metaLabel: [s.year, s.rating ? `⭐ ${s.rating.toFixed(1)}` : null]
-          .filter(Boolean)
-          .join(" · "),
-      }));
+  const persistSeen = useCallback(() => {
+    try {
+      localStorage.setItem(
+        SEEN_STORAGE_KEY,
+        JSON.stringify([...seenRef.current])
+      );
+    } catch {
+      // storage may be unavailable; in-memory dedup still holds for the session
     }
-    return recommendations.map((r) => ({
-      id: r.movie.title,
+  }, []);
+
+  // Append only unseen suggestions, marking them seen so they can't return.
+  const addUnseen = useCallback(
+    (incoming: DisplaySuggestion[]) => {
+      const fresh = incoming.filter((s) => !seenRef.current.has(s.id));
+      fresh.forEach((s) => seenRef.current.add(s.id));
+      if (fresh.length) {
+        persistSeen();
+        setStream((prev) => [...prev, ...fresh]);
+      }
+      return fresh.length;
+    },
+    [persistSeen]
+  );
+
+  const curatedFallback = useCallback((): DisplaySuggestion[] => {
+    return recommendationsRef.current.map((r) => ({
+      id: `curated:${r.movie.title}`,
       title: r.movie.title,
       year: r.movie.year,
       posterUrl: r.movie.posterUrl,
@@ -1346,15 +1370,90 @@ export default function MoviesPage() {
       tags: r.movie.tags,
       metaLabel: `${r.movie.year} · ${r.matches}/${QUESTIONS.length} match`,
     }));
-  }, [apiSuggestions, recommendations]);
+  }, []);
 
-  const activeSuggestion =
-    displaySuggestions[suggestionIndex] ?? displaySuggestions[0];
+  // Reset and load the first page whenever the filters change post-completion.
+  useEffect(() => {
+    if (!allAnswered) {
+      setStream([]);
+      setPage(0);
+      setTotalPages(0);
+      return;
+    }
+    const controller = new AbortController();
+    setLoading(true);
+    setSuggestionIndex(0);
+    setStream([]);
+    const params = new URLSearchParams({ region, ...answers, page: "1" });
+    fetch(`/api/movies/discover?${params.toString()}`, { signal: controller.signal })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.source === "tmdb" && Array.isArray(data.results)) {
+          setTotalPages(data.totalPages || 1);
+          setPage(1);
+          addUnseen(data.results.map(toDisplay));
+        } else {
+          // API unavailable — fall back to the curated list (also de-duped).
+          setTotalPages(1);
+          setPage(1);
+          addUnseen(curatedFallback());
+        }
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) {
+          setTotalPages(1);
+          setPage(1);
+          addUnseen(curatedFallback());
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+    return () => controller.abort();
+    // filterKey captures region + answers; deliberately not re-running on the
+    // helper identities.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allAnswered, filterKey]);
+
+  // Fetch successive TMDB pages, skipping pages that are fully "seen", until we
+  // find fresh movies or run out of pages.
+  const fetchMore = useCallback(async () => {
+    if (loading || page === 0 || page >= totalPages) return;
+    setLoading(true);
+    try {
+      let nextPage = page;
+      while (nextPage < totalPages) {
+        nextPage += 1;
+        const params = new URLSearchParams({ region, ...answers, page: String(nextPage) });
+        const data = await fetch(`/api/movies/discover?${params.toString()}`).then(
+          (res) => res.json()
+        );
+        setPage(nextPage);
+        if (data.source === "tmdb" && Array.isArray(data.results)) {
+          const added = addUnseen(data.results.map(toDisplay));
+          if (added > 0) break;
+        } else {
+          break;
+        }
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [loading, page, totalPages, region, answers, addUnseen]);
+
+  const activeSuggestion = stream[suggestionIndex] ?? stream[0];
+  const canFetchMore = page > 0 && page < totalPages;
+
+  // Prefetch more as the user nears the end so "Next" stays seamless.
+  useEffect(() => {
+    if (allAnswered && suggestionIndex >= stream.length - 2 && canFetchMore && !loading) {
+      fetchMore();
+    }
+  }, [allAnswered, suggestionIndex, stream.length, canFetchMore, loading, fetchMore]);
 
   function selectRegion(nextRegion: Region) {
     if (nextRegion === region) return;
     setRegion(nextRegion);
-    // Keep results visible so a new shortlist appears immediately on change.
     setSuggestionIndex(0);
   }
 
@@ -1384,18 +1483,25 @@ export default function MoviesPage() {
     setStep(0);
     setShowResults(false);
     setSuggestionIndex(0);
+    // Forget history so a fresh run can surface everything again.
+    seenRef.current = new Set();
+    persistSeen();
+    setStream([]);
+    setPage(0);
+    setTotalPages(0);
   }
 
   function showPreviousSuggestion() {
-    setSuggestionIndex((prev) =>
-      prev === 0 ? displaySuggestions.length - 1 : prev - 1
-    );
+    setSuggestionIndex((prev) => Math.max(0, prev - 1));
   }
 
   function showNextSuggestion() {
-    setSuggestionIndex((prev) =>
-      prev + 1 >= displaySuggestions.length ? 0 : prev + 1
-    );
+    setSuggestionIndex((prev) => {
+      if (prev + 1 < stream.length) return prev + 1;
+      // At the end of the buffer: pull more pages, stay put until they arrive.
+      if (canFetchMore) fetchMore();
+      return prev;
+    });
   }
 
   return (
@@ -1498,16 +1604,16 @@ export default function MoviesPage() {
                   </p>
                 </div>
               </div>
-            ) : displaySuggestions.length === 0 ? (
+            ) : stream.length === 0 ? (
               <div className={styles.emptyState}>
                 <div>
                   <p className={styles.emptyTitle}>
-                    {apiLoading ? "Finding picks…" : `No ${region} matches for this style.`}
+                    {loading ? "Finding picks…" : `No new ${region} matches right now.`}
                   </p>
                   <p className={styles.emptyText}>
-                    {apiLoading
+                    {loading
                       ? "Matching your mood, pace, and release style."
-                      : "Try a different release style — or switch library — to see suggestions."}
+                      : "Try a different style, switch library, or hit Start over to reset what you've seen."}
                   </p>
                 </div>
               </div>
@@ -1518,7 +1624,7 @@ export default function MoviesPage() {
                     <div className={styles.resultsHeader}>
                       <h2>{region} suggestion</h2>
                       <span className={styles.matchBadge}>
-                        {suggestionIndex + 1} of {displaySuggestions.length}
+                        Suggestion {suggestionIndex + 1}
                       </span>
                     </div>
 
@@ -1551,6 +1657,7 @@ export default function MoviesPage() {
                         type="button"
                         className={styles.secondaryButton}
                         onClick={showPreviousSuggestion}
+                        disabled={suggestionIndex === 0}
                       >
                         Previous suggestion
                       </button>
@@ -1558,8 +1665,13 @@ export default function MoviesPage() {
                         type="button"
                         className={styles.primaryButton}
                         onClick={showNextSuggestion}
+                        disabled={
+                          suggestionIndex + 1 >= stream.length && !canFetchMore
+                        }
                       >
-                        Next suggestion
+                        {loading && suggestionIndex + 1 >= stream.length
+                          ? "Loading…"
+                          : "Next suggestion"}
                       </button>
                     </div>
                   </>
