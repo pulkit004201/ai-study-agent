@@ -69,10 +69,17 @@ function eraDateRange(era: string | null): { gte?: string; lte?: string } {
   }
 }
 
+// Env var names are case-sensitive; accept the common casings so a dashboard
+// typo (e.g. TMDB_Access_Token) still works.
+const TMDB_TOKEN =
+  process.env.TMDB_ACCESS_TOKEN || process.env.TMDB_Access_Token || "";
+const TMDB_KEY = process.env.TMDB_API_KEY || process.env.TMDB_Api_Key || "";
+
 function authHeaders(): HeadersInit | null {
   // Prefer a v4 read access token; fall back to a v3 api key via query param.
-  const token = process.env.TMDB_ACCESS_TOKEN;
-  if (token) return { Authorization: `Bearer ${token}`, accept: "application/json" };
+  if (TMDB_TOKEN) {
+    return { Authorization: `Bearer ${TMDB_TOKEN}`, accept: "application/json" };
+  }
   return null;
 }
 
@@ -112,7 +119,7 @@ function buildParams(region: Region, answers: Record<string, string>) {
 
 export async function GET(request: Request) {
   const headers = authHeaders();
-  const apiKey = process.env.TMDB_API_KEY;
+  const apiKey = TMDB_KEY;
   if (!headers && !apiKey) {
     // No credentials configured — signal the client to use its fallback.
     return NextResponse.json({ source: "none", results: [] }, { status: 200 });
