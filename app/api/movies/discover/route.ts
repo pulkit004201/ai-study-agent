@@ -71,9 +71,16 @@ function eraDateRange(era: string | null): { gte?: string; lte?: string } {
 
 // Env var names are case-sensitive; accept the common casings so a dashboard
 // typo (e.g. TMDB_Access_Token) still works.
-const TMDB_TOKEN =
-  process.env.TMDB_ACCESS_TOKEN || process.env.TMDB_Access_Token || "";
-const TMDB_KEY = process.env.TMDB_API_KEY || process.env.TMDB_Api_Key || "";
+const TMDB_TOKEN = (
+  process.env.TMDB_ACCESS_TOKEN ||
+  process.env.TMDB_Access_Token ||
+  ""
+).trim();
+const TMDB_KEY = (
+  process.env.TMDB_API_KEY ||
+  process.env.TMDB_Api_Key ||
+  ""
+).trim();
 
 function authHeaders(): HeadersInit | null {
   // Prefer a v4 read access token; fall back to a v3 api key via query param.
