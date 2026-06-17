@@ -23,6 +23,15 @@ const GUIDES: Guide[] = [
     file: "/guides/pm-app-management-guide.pdf",
     tags: ["Product", "Mobile", "Management"],
   },
+  {
+    id: "pm-healthcare-products",
+    title: "The Product Manager's Guide to Healthcare Products",
+    description:
+      "A practical guide for product managers building in healthcare — covering domain context, regulation and compliance, stakeholders, and shipping product in a high-stakes environment.",
+    pages: 29,
+    file: "/guides/pm-healthcare-products-guide.pdf",
+    tags: ["Product", "Healthcare", "Compliance"],
+  },
 ];
 
 export default function ResourcesPage() {
