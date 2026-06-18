@@ -422,6 +422,12 @@
     grid-template-columns: 1fr;
   }
 
+  /* On mobile the grid stacks, so show only the active step (quiz OR
+     results). On desktop both panels stay side by side. */
+  .hideOnMobile {
+    display: none;
+  }
+
   .header {
     gap: 12px;
     margin-bottom: 16px;

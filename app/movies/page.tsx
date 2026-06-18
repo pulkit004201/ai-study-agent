@@ -1533,8 +1533,11 @@ export default function MoviesPage() {
         </header>
 
         <section className={styles.grid}>
-          {!showResults ? (
-          <div className={`${styles.panel} ${styles.agentPanel}`}>
+          <div
+            className={`${styles.panel} ${styles.agentPanel} ${
+              showResults ? styles.hideOnMobile : ""
+            }`}
+          >
             <div className={styles.panelHeader}>
               <div>
                 <p className={styles.panelKicker}>Choose library</p>
@@ -1596,9 +1599,25 @@ export default function MoviesPage() {
               </p>
             </div>
           </div>
-          ) : (
-          <div className={`${styles.panel} ${styles.resultsPanel}`}>
-            {stream.length === 0 ? (
+
+          <div
+            className={`${styles.panel} ${styles.resultsPanel} ${
+              !showResults ? styles.hideOnMobile : ""
+            }`}
+          >
+            {!allAnswered ? (
+              <div className={styles.emptyState}>
+                <div>
+                  <p className={styles.emptyTitle}>
+                    Answer all {QUESTIONS.length} questions to see your shortlist.
+                  </p>
+                  <p className={styles.emptyText}>
+                    {answeredCount} of {QUESTIONS.length} selected — the agent compares
+                    your answers with mood, pace, company, and release-style signals.
+                  </p>
+                </div>
+              </div>
+            ) : stream.length === 0 ? (
               <div className={styles.emptyState}>
                 <div>
                   <p className={styles.emptyTitle}>
@@ -1682,7 +1701,6 @@ export default function MoviesPage() {
               </>
             )}
           </div>
-          )}
         </section>
       </div>
     </main>
