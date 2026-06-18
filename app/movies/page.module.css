@@ -414,12 +414,18 @@
 
 @media (max-width: 900px) {
   .page {
-    padding: 32px 16px 64px;
+    padding: 20px 16px 56px;
   }
 
   .header,
   .grid {
     grid-template-columns: 1fr;
+  }
+
+  .header {
+    gap: 12px;
+    margin-bottom: 16px;
+    align-items: start;
   }
 
   .progressCard {
@@ -428,12 +434,50 @@
 }
 
 @media (max-width: 560px) {
+  /* Compact the hero so the quiz fits without scrolling. */
+  .title {
+    font-size: 30px;
+    line-height: 1.05;
+  }
+
+  .subtitle {
+    display: none;
+  }
+
+  .progressCard {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+  }
+
+  .progressLabel {
+    margin: 0;
+  }
+
+  .progressValue {
+    font-size: 22px;
+  }
+
+  .progressTrack {
+    display: none;
+  }
+
   .agentPanel,
   .resultsPanel {
     padding: 16px;
   }
 
-  .regionToggle,
+  .panelHeader {
+    margin-bottom: 14px;
+  }
+
+  /* Keep Hollywood / Bollywood side by side; just tighten the gap. */
+  .regionToggle {
+    margin-bottom: 14px;
+  }
+
   .actions,
   .resultsHeader,
   .movieTopline,
@@ -443,12 +487,29 @@
     grid-template-columns: 1fr;
   }
 
-  .poster {
-    min-height: 300px;
+  .question {
+    font-size: 21px;
+    margin-bottom: 12px;
+  }
+
+  .questionMeta {
+    margin-bottom: 6px;
   }
 
   .questionBlock {
     min-height: 0;
+  }
+
+  .optionsGrid {
+    gap: 8px;
+  }
+
+  .optionButton {
+    padding: 12px 14px;
+  }
+
+  .poster {
+    min-height: 300px;
   }
 
   .secondaryButton,

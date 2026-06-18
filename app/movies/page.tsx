@@ -1478,6 +1478,11 @@ export default function MoviesPage() {
     setStep((prev) => Math.max(0, prev - 1));
   }
 
+  // Return to the questions from the results view without losing answers.
+  function editAnswers() {
+    setShowResults(false);
+  }
+
   function restart() {
     setAnswers(getInitialAnswers());
     setStep(0);
@@ -1528,6 +1533,7 @@ export default function MoviesPage() {
         </header>
 
         <section className={styles.grid}>
+          {!showResults ? (
           <div className={`${styles.panel} ${styles.agentPanel}`}>
             <div className={styles.panelHeader}>
               <div>
@@ -1590,21 +1596,9 @@ export default function MoviesPage() {
               </p>
             </div>
           </div>
-
+          ) : (
           <div className={`${styles.panel} ${styles.resultsPanel}`}>
-            {!showResults ? (
-              <div className={styles.emptyState}>
-                <div>
-                  <p className={styles.emptyTitle}>
-                    Answer all {QUESTIONS.length} questions to see your shortlist.
-                  </p>
-                  <p className={styles.emptyText}>
-                    {answeredCount} of {QUESTIONS.length} selected — the agent compares your
-                    answers with mood, pace, company, and release-style signals.
-                  </p>
-                </div>
-              </div>
-            ) : stream.length === 0 ? (
+            {stream.length === 0 ? (
               <div className={styles.emptyState}>
                 <div>
                   <p className={styles.emptyTitle}>
@@ -1678,6 +1672,9 @@ export default function MoviesPage() {
                 )}
 
                 <div className={styles.actions}>
+                  <button type="button" className={styles.secondaryButton} onClick={editAnswers}>
+                    ← Edit answers
+                  </button>
                   <button type="button" className={styles.secondaryButton} onClick={restart}>
                     Start over
                   </button>
@@ -1685,6 +1682,7 @@ export default function MoviesPage() {
               </>
             )}
           </div>
+          )}
         </section>
       </div>
     </main>
