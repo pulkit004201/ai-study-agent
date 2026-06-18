@@ -32,6 +32,15 @@ const GUIDES: Guide[] = [
     file: "/guides/pm-healthcare-products-guide.pdf",
     tags: ["Product", "Healthcare", "Compliance"],
   },
+  {
+    id: "ai-pm-handbook",
+    title: "The AI Product Manager's Handbook",
+    description:
+      "A hands-on handbook for product managers building with AI — covering core concepts, model and data thinking, evaluation, and how to scope, ship, and iterate on AI-powered products.",
+    pages: 36,
+    file: "/guides/ai-pm-handbook.pdf",
+    tags: ["Product", "AI", "Playbook"],
+  },
 ];
 
 export default function ResourcesPage() {
