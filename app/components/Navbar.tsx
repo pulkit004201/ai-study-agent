@@ -82,7 +82,7 @@ export default function Navbar() {
     { label: "Dashboard", path: "/dashboard" },
     { label: "Learn", path: "/learn" },
     { label: "Visualise", path: "/visualize" },
-    { label: "Movies", path: "/movies" },
+    { label: "Playground", path: "/movies" },
     { label: "Quiz", path: "/quiz" },
     { label: "Resources", path: "/resources" },
   ];
