@@ -1,8 +1,13 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { isAnalyticsUserAllowed } from "@/lib/analytics-access";
+
+type NavChild = { label: string; path: string };
+type NavEntry =
+  | { kind: "link"; label: string; path: string }
+  | { kind: "group"; label: string; items: NavChild[] };
 
 export default function Navbar() {
   const router = useRouter();
@@ -10,6 +15,8 @@ export default function Navbar() {
   const [isMobile, setIsMobile] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+  const [learnOpen, setLearnOpen] = useState(false);
+  const learnRef = useRef<HTMLDivElement | null>(null);
   const [theme, setTheme] = useState<"dark" | "light">(() => {
     if (typeof window === "undefined") {
       return "dark";
@@ -78,17 +85,39 @@ export default function Navbar() {
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
 
-  const navItems = [
-    { label: "Dashboard", path: "/dashboard" },
-    { label: "Learn", path: "/learn" },
-    { label: "Visualise", path: "/visualize" },
-    { label: "Playground", path: "/movies" },
-    { label: "Quiz", path: "/quiz" },
-    { label: "Resources", path: "/resources" },
+  const navEntries: NavEntry[] = [
+    { kind: "link", label: "Dashboard", path: "/dashboard" },
+    {
+      kind: "group",
+      label: "Learn",
+      items: [
+        { label: "AI Knowledge Cards", path: "/learn" },
+        { label: "Visualise", path: "/visualize" },
+      ],
+    },
+    { kind: "link", label: "Playground", path: "/movies" },
+    { kind: "link", label: "Quiz", path: "/quiz" },
+    { kind: "link", label: "Resources", path: "/resources" },
   ];
   if (canViewAnalytics) {
-    navItems.splice(3, 0, { label: "Analytics", path: "/analytics" });
+    navEntries.splice(2, 0, {
+      kind: "link",
+      label: "Analytics",
+      path: "/analytics",
+    });
   }
+
+  // Close the Learn dropdown when clicking outside it.
+  useEffect(() => {
+    if (!learnOpen) return;
+    function onPointerDown(event: MouseEvent) {
+      if (learnRef.current && !learnRef.current.contains(event.target as Node)) {
+        setLearnOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", onPointerDown);
+    return () => document.removeEventListener("mousedown", onPointerDown);
+  }, [learnOpen]);
 
   function handleLogout() {
     localStorage.removeItem("userEmail");
@@ -119,18 +148,63 @@ export default function Navbar() {
 
         {!isMobile && (
           <div style={styles.menu}>
-            {navItems.map((item) => {
-              const active = pathname === item.path;
+            {navEntries.map((entry) => {
+              if (entry.kind === "group") {
+                const groupActive = entry.items.some(
+                  (child) => pathname === child.path
+                );
+                return (
+                  <div key={entry.label} style={styles.navGroupWrap} ref={learnRef}>
+                    <button
+                      onClick={() => setLearnOpen((open) => !open)}
+                      aria-expanded={learnOpen}
+                      style={{
+                        ...styles.button,
+                        ...(groupActive || learnOpen ? styles.activeButton : {}),
+                      }}
+                    >
+                      {entry.label}
+                      <span style={styles.caret} aria-hidden="true">
+                        ▾
+                      </span>
+                    </button>
+
+                    {learnOpen && (
+                      <div style={styles.navDropdown}>
+                        {entry.items.map((child) => (
+                          <button
+                            key={child.path}
+                            onClick={() => {
+                              setLearnOpen(false);
+                              router.push(child.path);
+                            }}
+                            style={{
+                              ...styles.navDropdownItem,
+                              ...(pathname === child.path
+                                ? styles.navDropdownItemActive
+                                : {}),
+                            }}
+                          >
+                            {child.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
+              const active = pathname === entry.path;
               return (
                 <button
-                  key={item.path}
-                  onClick={() => router.push(item.path)}
+                  key={entry.path}
+                  onClick={() => router.push(entry.path)}
                   style={{
                     ...styles.button,
                     ...(active ? styles.activeButton : {}),
                   }}
                 >
-                  {item.label}
+                  {entry.label}
                 </button>
               );
             })}
@@ -217,22 +291,49 @@ export default function Navbar() {
           }}
         >
           <div style={styles.drawerTitle}>Menu</div>
-          {navItems.map((item) => {
-            const active = pathname === item.path;
+          {navEntries.map((entry) => {
+            if (entry.kind === "group") {
+              return (
+                <div key={entry.label} style={styles.drawerGroup}>
+                  <p style={styles.drawerGroupLabel}>{entry.label}</p>
+                  {entry.items.map((child) => {
+                    const active = pathname === child.path;
+                    return (
+                      <button
+                        key={child.path}
+                        onClick={() => {
+                          setMenuOpen(false);
+                          setAccountOpen(false);
+                          router.push(child.path);
+                        }}
+                        style={{
+                          ...styles.drawerButton,
+                          ...(active ? styles.drawerActive : {}),
+                        }}
+                      >
+                        {child.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            }
+
+            const active = pathname === entry.path;
             return (
               <button
-                key={item.path}
+                key={entry.path}
                 onClick={() => {
                   setMenuOpen(false);
                   setAccountOpen(false);
-                  router.push(item.path);
+                  router.push(entry.path);
                 }}
                 style={{
                   ...styles.drawerButton,
                   ...(active ? styles.drawerActive : {}),
                 }}
               >
-                {item.label}
+                {entry.label}
               </button>
             );
           })}
@@ -498,6 +599,70 @@ const styles: Record<string, React.CSSProperties> = {
     backgroundColor: "var(--nav-button-active)",
     borderColor: "var(--nav-button-active-border)",
     color: "var(--nav-button-active-text)",
+  },
+
+  navGroupWrap: {
+    position: "relative",
+  },
+
+  caret: {
+    marginLeft: 6,
+    fontSize: 9,
+    opacity: 0.85,
+  },
+
+  navDropdown: {
+    position: "absolute",
+    left: 0,
+    top: 46,
+    minWidth: 220,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderStyle: "solid",
+    borderColor: "var(--border)",
+    background: "var(--account-dropdown-bg)",
+    padding: 8,
+    display: "flex",
+    flexDirection: "column",
+    gap: 6,
+    boxShadow: "0 12px 34px rgba(0,0,0,0.45)",
+    zIndex: 1500,
+  },
+
+  navDropdownItem: {
+    width: "100%",
+    textAlign: "left",
+    padding: "10px 12px",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderStyle: "solid",
+    borderColor: "transparent",
+    background: "transparent",
+    color: "var(--nav-button-text)",
+    cursor: "pointer",
+    fontSize: 13,
+    fontWeight: 600,
+    whiteSpace: "nowrap",
+  },
+
+  navDropdownItemActive: {
+    background: "var(--nav-button-active)",
+    borderColor: "var(--nav-button-active-border)",
+    color: "var(--nav-button-active-text)",
+  },
+
+  drawerGroup: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+  },
+
+  drawerGroupLabel: {
+    margin: "4px 0 0",
+    color: "#94a3b8",
+    fontSize: 12,
+    letterSpacing: 1,
+    textTransform: "uppercase",
   },
 
   logout: {
