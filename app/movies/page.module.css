@@ -254,6 +254,47 @@
   padding: 18px;
 }
 
+.ratingTabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.ratingTabsLabel {
+  margin-right: 4px;
+  color: var(--text-soft);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ratingTab {
+  min-height: 36px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--foreground);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.16s ease, background 0.16s ease;
+}
+
+.ratingTab:hover {
+  border-color: color-mix(in srgb, var(--hero-accent) 50%, var(--border));
+}
+
+.ratingTabActive {
+  border-color: #67e8f9;
+  background: linear-gradient(90deg, rgba(20, 184, 166, 0.34), rgba(37, 99, 235, 0.34));
+  color: #ffffff;
+}
+
 .emptyState {
   display: grid;
   min-height: 500px;

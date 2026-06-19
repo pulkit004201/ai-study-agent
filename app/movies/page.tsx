@@ -43,6 +43,15 @@ type ApiSuggestion = {
   rating: number | null;
 };
 
+type RatingTab = "all" | "low" | "mid" | "high";
+
+const RATING_TABS: { id: RatingTab; label: string }[] = [
+  { id: "all", label: "All" },
+  { id: "low", label: "< 5" },
+  { id: "mid", label: "5 – 7" },
+  { id: "high", label: "> 7" },
+];
+
 type Region = "Hollywood" | "Bollywood";
 type AnswerKey = "mood" | "pace" | "company" | "era";
 
@@ -1281,6 +1290,7 @@ export default function MoviesPage() {
   const [answers, setAnswers] = useState<Record<AnswerKey, string>>(getInitialAnswers);
   const [showResults, setShowResults] = useState(false);
   const [suggestionIndex, setSuggestionIndex] = useState(0);
+  const [ratingTab, setRatingTab] = useState<RatingTab>("all");
 
   const currentQuestion = QUESTIONS[step];
   const answeredCount = QUESTIONS.filter((question) => answers[question.key]).length;
@@ -1313,7 +1323,7 @@ export default function MoviesPage() {
 
   const allAnswered = answeredCount === QUESTIONS.length;
   const answersKey = QUESTIONS.map((question) => answers[question.key]).join("|");
-  const filterKey = `${region}|${answersKey}`;
+  const filterKey = `${region}|${answersKey}|${ratingTab}`;
 
   // De-duped, paginating stream of suggestions. `seenIds` persists across
   // sessions so a movie never repeats in any form or order.
@@ -1384,7 +1394,12 @@ export default function MoviesPage() {
     setLoading(true);
     setSuggestionIndex(0);
     setStream([]);
-    const params = new URLSearchParams({ region, ...answers, page: "1" });
+    const params = new URLSearchParams({
+      region,
+      ...answers,
+      rating: ratingTab,
+      page: "1",
+    });
     fetch(`/api/movies/discover?${params.toString()}`, { signal: controller.signal })
       .then((res) => res.json())
       .then((data) => {
@@ -1424,7 +1439,12 @@ export default function MoviesPage() {
       let nextPage = page;
       while (nextPage < totalPages) {
         nextPage += 1;
-        const params = new URLSearchParams({ region, ...answers, page: String(nextPage) });
+        const params = new URLSearchParams({
+          region,
+          ...answers,
+          rating: ratingTab,
+          page: String(nextPage),
+        });
         const data = await fetch(`/api/movies/discover?${params.toString()}`).then(
           (res) => res.json()
         );
@@ -1439,7 +1459,7 @@ export default function MoviesPage() {
     } finally {
       setLoading(false);
     }
-  }, [loading, page, totalPages, region, answers, addUnseen]);
+  }, [loading, page, totalPages, region, answers, ratingTab, addUnseen]);
 
   const activeSuggestion = stream[suggestionIndex] ?? stream[0];
   const canFetchMore = page > 0 && page < totalPages;
@@ -1617,7 +1637,26 @@ export default function MoviesPage() {
                   </p>
                 </div>
               </div>
-            ) : stream.length === 0 ? (
+            ) : (
+              <>
+                <div className={styles.ratingTabs} role="tablist" aria-label="IMDb rating">
+                  <span className={styles.ratingTabsLabel}>IMDb rating</span>
+                  {RATING_TABS.map((tab) => (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={ratingTab === tab.id}
+                      className={`${styles.ratingTab} ${
+                        ratingTab === tab.id ? styles.ratingTabActive : ""
+                      }`}
+                      onClick={() => setRatingTab(tab.id)}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+                {stream.length === 0 ? (
               <div className={styles.emptyState}>
                 <div>
                   <p className={styles.emptyTitle}>
@@ -1698,6 +1737,8 @@ export default function MoviesPage() {
                     Start over
                   </button>
                 </div>
+              </>
+                )}
               </>
             )}
           </div>

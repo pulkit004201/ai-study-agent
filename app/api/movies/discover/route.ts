@@ -94,7 +94,30 @@ function authHeaders(): HeadersInit | null {
   return null;
 }
 
-function buildParams(region: Region, answers: Record<string, string>, page: number) {
+function applyRating(params: URLSearchParams, rating: string) {
+  // IMDb-style rating buckets mapped to TMDB vote_average bounds.
+  switch (rating) {
+    case "low": // < 5
+      params.set("vote_average.lte", "4.9");
+      break;
+    case "mid": // 5 – 7
+      params.set("vote_average.gte", "5");
+      params.set("vote_average.lte", "7");
+      break;
+    case "high": // > 7
+      params.set("vote_average.gte", "7.1");
+      break;
+    default: // all — no bound
+      break;
+  }
+}
+
+function buildParams(
+  region: Region,
+  answers: Record<string, string>,
+  page: number,
+  rating: string
+) {
   const params = new URLSearchParams({
     include_adult: "false",
     include_video: "false",
@@ -125,6 +148,8 @@ function buildParams(region: Region, answers: Record<string, string>, page: numb
     params.set("vote_count.gte", region === "Bollywood" ? "20" : "80");
   }
 
+  applyRating(params, rating);
+
   return params;
 }
 
@@ -148,8 +173,9 @@ export async function GET(request: Request) {
 
   const pageParam = Number(searchParams.get("page") || "1");
   const page = Number.isFinite(pageParam) ? Math.min(Math.max(pageParam, 1), 500) : 1;
+  const rating = searchParams.get("rating") || "all";
 
-  const params = buildParams(region, answers, page);
+  const params = buildParams(region, answers, page, rating);
   if (!headers && apiKey) params.set("api_key", apiKey);
 
   try {
