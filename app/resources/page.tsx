@@ -41,6 +41,15 @@ const GUIDES: Guide[] = [
     file: "/guides/ai-pm-handbook.pdf",
     tags: ["Product", "AI", "Playbook"],
   },
+  {
+    id: "product-analytics-for-pms",
+    title: "Product Analytics for PMs",
+    description:
+      "A practical guide to analytics for product managers — defining the right metrics, instrumenting events, building funnels and cohorts, and turning data into product decisions.",
+    pages: 25,
+    file: "/guides/product-analytics-for-pms.pdf",
+    tags: ["Product", "Analytics", "Metrics"],
+  },
 ];
 
 export default function ResourcesPage() {

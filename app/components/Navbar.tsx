@@ -319,7 +319,7 @@ const styles: Record<string, React.CSSProperties> = {
 
   menu: {
     display: "flex",
-    gap: 12,
+    gap: 8,
     alignItems: "center",
   },
 
@@ -476,19 +476,22 @@ const styles: Record<string, React.CSSProperties> = {
   },
 
   button: {
-    padding: "8px 16px",
-    borderRadius: 999,
-    backgroundColor: "var(--nav-button-bg)",
+    padding: "9px 16px",
+    borderRadius: 8,
+    backgroundColor: "transparent",
     color: "var(--nav-button-text)",
     cursor: "pointer",
-    fontSize: 14,
+    fontSize: 12.5,
+    fontWeight: 600,
+    letterSpacing: "0.07em",
+    textTransform: "uppercase",
 
     /* 👇 IMPORTANT: no shorthand border */
     borderWidth: 1,
     borderStyle: "solid",
     borderColor: "var(--nav-button-border)",
 
-    transition: "all 0.2s ease",
+    transition: "all 0.18s ease",
   },
 
   activeButton: {
