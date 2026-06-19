@@ -1639,8 +1639,8 @@ export default function MoviesPage() {
               </div>
             ) : (
               <>
-                <div className={styles.ratingTabs} role="tablist" aria-label="IMDb rating">
-                  <span className={styles.ratingTabsLabel}>IMDb rating</span>
+                <div className={styles.ratingTabs} role="tablist" aria-label="Rating">
+                  <span className={styles.ratingTabsLabel}>Rating</span>
                   {RATING_TABS.map((tab) => (
                     <button
                       key={tab.id}
