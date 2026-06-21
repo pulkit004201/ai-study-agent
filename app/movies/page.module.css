@@ -460,6 +460,17 @@
   text-transform: uppercase;
 }
 
+.watchLink {
+  display: inline-flex;
+  text-decoration: none;
+  border-radius: 7px;
+  transition: transform 0.14s ease;
+}
+
+.watchLink:hover {
+  transform: translateY(-2px);
+}
+
 .watchProvider {
   display: inline-flex;
   align-items: center;
@@ -469,6 +480,18 @@
   border: 1px solid var(--border);
   background: #fff;
   line-height: 0;
+}
+
+.watchRegion {
+  margin-left: auto;
+  padding: 5px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--foreground);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
 }
 
 .watchLogo {

@@ -52,6 +52,48 @@ type ProviderInfo = {
   link: string | null;
 };
 
+const WATCH_REGIONS: { code: string; label: string }[] = [
+  { code: "IN", label: "India" },
+  { code: "US", label: "United States" },
+  { code: "GB", label: "United Kingdom" },
+  { code: "CA", label: "Canada" },
+  { code: "AU", label: "Australia" },
+];
+
+function ProviderLogo({
+  provider,
+  link,
+  title,
+}: {
+  provider: WatchProvider;
+  link: string | null;
+  title: string;
+}) {
+  const badge = (
+    <span className={styles.watchProvider} title={title}>
+      <Image
+        src={provider.logoUrl}
+        alt={provider.name}
+        width={26}
+        height={26}
+        className={styles.watchLogo}
+      />
+    </span>
+  );
+  if (!link) return badge;
+  return (
+    <a
+      href={link}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={styles.watchLink}
+      aria-label={`Watch on ${provider.name}`}
+    >
+      {badge}
+    </a>
+  );
+}
+
 const RATING_TABS: { id: RatingTab; label: string }[] = [
   { id: "all", label: "All" },
   { id: "low", label: "< 5" },
@@ -1471,23 +1513,28 @@ export default function MoviesPage() {
   const activeSuggestion = stream[suggestionIndex] ?? stream[0];
   const canFetchMore = page > 0 && page < totalPages;
 
-  // Streaming availability (TMDB/JustWatch) for the movie currently shown.
-  const [providersById, setProvidersById] = useState<Record<string, ProviderInfo>>({});
+  // Streaming availability (TMDB/JustWatch) for the movie currently shown,
+  // cached per movie + region.
+  const [watchRegion, setWatchRegion] = useState("IN");
+  const [providersByKey, setProvidersByKey] = useState<Record<string, ProviderInfo>>({});
   const activeId = activeSuggestion?.id;
+  const isApiMovie = Boolean(activeId && !activeId.startsWith("curated:"));
+  const providerKey = isApiMovie ? `${activeId}|${watchRegion}` : "";
   useEffect(() => {
-    if (!activeId || activeId.startsWith("curated:")) return;
-    if (providersById[activeId]) return;
+    if (!providerKey) return;
+    if (providersByKey[providerKey]) return;
+    const [id, region] = providerKey.split("|");
     let aborted = false;
-    fetch(`/api/movies/providers?id=${activeId}`)
+    fetch(`/api/movies/providers?id=${id}&region=${region}`)
       .then((res) => res.json())
       .then((data) => {
         if (aborted) return;
-        setProvidersById((prev) =>
-          prev[activeId]
+        setProvidersByKey((prev) =>
+          prev[providerKey]
             ? prev
             : {
                 ...prev,
-                [activeId]: {
+                [providerKey]: {
                   providers: data.providers || [],
                   rentBuy: data.rentBuy || [],
                   link: data.link || null,
@@ -1500,9 +1547,10 @@ export default function MoviesPage() {
       aborted = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeId]);
-  const activeProviders =
-    activeId && !activeId.startsWith("curated:") ? providersById[activeId] : undefined;
+  }, [providerKey]);
+  const activeProviders = providerKey ? providersByKey[providerKey] : undefined;
+  const watchRegionLabel =
+    WATCH_REGIONS.find((r) => r.code === watchRegion)?.label ?? watchRegion;
 
   // Prefetch more as the user nears the end so "Next" stays seamless.
   useEffect(() => {
@@ -1742,51 +1790,50 @@ export default function MoviesPage() {
                           ))}
                         </div>
 
-                        {activeId && !activeId.startsWith("curated:") && (
+                        {isApiMovie && (
                           <div className={styles.watchRow}>
                             <span className={styles.watchLabel}>Watch on</span>
                             {activeProviders === undefined ? (
                               <span className={styles.watchHint}>Checking…</span>
                             ) : activeProviders.providers.length > 0 ? (
                               activeProviders.providers.map((provider) => (
-                                <span
+                                <ProviderLogo
                                   key={provider.name}
-                                  className={styles.watchProvider}
+                                  provider={provider}
+                                  link={activeProviders.link}
                                   title={provider.name}
-                                >
-                                  <Image
-                                    src={provider.logoUrl}
-                                    alt={provider.name}
-                                    width={26}
-                                    height={26}
-                                    className={styles.watchLogo}
-                                  />
-                                </span>
+                                />
                               ))
                             ) : activeProviders.rentBuy.length > 0 ? (
                               <>
                                 {activeProviders.rentBuy.slice(0, 4).map((provider) => (
-                                  <span
+                                  <ProviderLogo
                                     key={provider.name}
-                                    className={styles.watchProvider}
-                                    title={`${provider.name} (rent/buy)`}
-                                  >
-                                    <Image
-                                      src={provider.logoUrl}
-                                      alt={provider.name}
-                                      width={26}
-                                      height={26}
-                                      className={styles.watchLogo}
-                                    />
-                                  </span>
+                                    provider={provider}
+                                    link={activeProviders.link}
+                                    title={`${provider.name} (rent / buy)`}
+                                  />
                                 ))}
                                 <span className={styles.watchHint}>rent / buy</span>
                               </>
                             ) : (
                               <span className={styles.watchHint}>
-                                Not on streaming in India
+                                Not on streaming in {watchRegionLabel}
                               </span>
                             )}
+
+                            <select
+                              className={styles.watchRegion}
+                              value={watchRegion}
+                              onChange={(event) => setWatchRegion(event.target.value)}
+                              aria-label="Streaming region"
+                            >
+                              {WATCH_REGIONS.map((region) => (
+                                <option key={region.code} value={region.code}>
+                                  {region.label}
+                                </option>
+                              ))}
+                            </select>
                           </div>
                         )}
                       </div>
