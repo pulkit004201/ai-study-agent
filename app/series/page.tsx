@@ -562,6 +562,47 @@ function SeriesPoster({
   );
 }
 
+// A streaming-platform logo. Links out to the title's watch page (JustWatch via
+// TMDB) when a link is available, otherwise renders a non-clickable badge.
+// TMDB only provides one watch link per title, not per-platform deep links.
+function ProviderBadge({
+  provider,
+  link,
+  title,
+}: {
+  provider: WatchProvider;
+  link: string | null;
+  title?: string;
+}) {
+  const logo = (
+    <Image
+      src={provider.logoUrl}
+      alt={provider.name}
+      width={26}
+      height={26}
+      className={styles.watchLogo}
+    />
+  );
+  if (link) {
+    return (
+      <a
+        href={link}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={styles.watchProvider}
+        title={title ?? `${provider.name} — open watch page`}
+      >
+        {logo}
+      </a>
+    );
+  }
+  return (
+    <span className={styles.watchProvider} title={title ?? provider.name}>
+      {logo}
+    </span>
+  );
+}
+
 export default function SeriesPage() {
   const [lang, setLang] = useState<Lang>("English");
   const [step, setStep] = useState(0);
@@ -1042,36 +1083,21 @@ export default function SeriesPage() {
                               <span className={styles.watchHint}>Checking…</span>
                             ) : activeProviders.providers.length > 0 ? (
                               activeProviders.providers.map((provider) => (
-                                <span
+                                <ProviderBadge
                                   key={provider.name}
-                                  className={styles.watchProvider}
-                                  title={provider.name}
-                                >
-                                  <Image
-                                    src={provider.logoUrl}
-                                    alt={provider.name}
-                                    width={26}
-                                    height={26}
-                                    className={styles.watchLogo}
-                                  />
-                                </span>
+                                  provider={provider}
+                                  link={activeProviders.link}
+                                />
                               ))
                             ) : activeProviders.rentBuy.length > 0 ? (
                               <>
                                 {activeProviders.rentBuy.slice(0, 4).map((provider) => (
-                                  <span
+                                  <ProviderBadge
                                     key={provider.name}
-                                    className={styles.watchProvider}
-                                    title={`${provider.name} (rent/buy)`}
-                                  >
-                                    <Image
-                                      src={provider.logoUrl}
-                                      alt={provider.name}
-                                      width={26}
-                                      height={26}
-                                      className={styles.watchLogo}
-                                    />
-                                  </span>
+                                    provider={provider}
+                                    link={activeProviders.link}
+                                    title={`${provider.name} (rent/buy) — open watch page`}
+                                  />
                                 ))}
                                 <span className={styles.watchHint}>rent / buy</span>
                               </>
