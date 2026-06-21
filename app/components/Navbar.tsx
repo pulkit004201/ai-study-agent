@@ -15,8 +15,9 @@ export default function Navbar() {
   const [isMobile, setIsMobile] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
-  const [learnOpen, setLearnOpen] = useState(false);
-  const learnRef = useRef<HTMLDivElement | null>(null);
+  // Which nav dropdown group (by label) is currently open, if any.
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
+  const navMenuRef = useRef<HTMLDivElement | null>(null);
   const [theme, setTheme] = useState<"dark" | "light">(() => {
     if (typeof window === "undefined") {
       return "dark";
@@ -95,7 +96,14 @@ export default function Navbar() {
         { label: "Visualise", path: "/visualize" },
       ],
     },
-    { kind: "link", label: "Playground", path: "/movies" },
+    {
+      kind: "group",
+      label: "Playground",
+      items: [
+        { label: "Movies", path: "/movies" },
+        { label: "Web Series", path: "/series" },
+      ],
+    },
     { kind: "link", label: "Quiz", path: "/quiz" },
     { kind: "link", label: "Resources", path: "/resources" },
   ];
@@ -107,17 +115,17 @@ export default function Navbar() {
     });
   }
 
-  // Close the Learn dropdown when clicking outside it.
+  // Close any open nav dropdown when clicking outside the menu.
   useEffect(() => {
-    if (!learnOpen) return;
+    if (!openGroup) return;
     function onPointerDown(event: MouseEvent) {
-      if (learnRef.current && !learnRef.current.contains(event.target as Node)) {
-        setLearnOpen(false);
+      if (navMenuRef.current && !navMenuRef.current.contains(event.target as Node)) {
+        setOpenGroup(null);
       }
     }
     document.addEventListener("mousedown", onPointerDown);
     return () => document.removeEventListener("mousedown", onPointerDown);
-  }, [learnOpen]);
+  }, [openGroup]);
 
   function handleLogout() {
     localStorage.removeItem("userEmail");
@@ -147,20 +155,25 @@ export default function Navbar() {
         </div>
 
         {!isMobile && (
-          <div style={styles.menu}>
+          <div style={styles.menu} ref={navMenuRef}>
             {navEntries.map((entry) => {
               if (entry.kind === "group") {
                 const groupActive = entry.items.some(
                   (child) => pathname === child.path
                 );
+                const isOpen = openGroup === entry.label;
                 return (
-                  <div key={entry.label} style={styles.navGroupWrap} ref={learnRef}>
+                  <div key={entry.label} style={styles.navGroupWrap}>
                     <button
-                      onClick={() => setLearnOpen((open) => !open)}
-                      aria-expanded={learnOpen}
+                      onClick={() =>
+                        setOpenGroup((current) =>
+                          current === entry.label ? null : entry.label
+                        )
+                      }
+                      aria-expanded={isOpen}
                       style={{
                         ...styles.button,
-                        ...(groupActive || learnOpen ? styles.activeButton : {}),
+                        ...(groupActive || isOpen ? styles.activeButton : {}),
                       }}
                     >
                       {entry.label}
@@ -169,13 +182,13 @@ export default function Navbar() {
                       </span>
                     </button>
 
-                    {learnOpen && (
+                    {isOpen && (
                       <div style={styles.navDropdown}>
                         {entry.items.map((child) => (
                           <button
                             key={child.path}
                             onClick={() => {
-                              setLearnOpen(false);
+                              setOpenGroup(null);
                               router.push(child.path);
                             }}
                             style={{
