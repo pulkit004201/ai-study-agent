@@ -52,14 +52,6 @@ type ProviderInfo = {
   link: string | null;
 };
 
-const WATCH_REGIONS: { code: string; label: string }[] = [
-  { code: "IN", label: "India" },
-  { code: "US", label: "United States" },
-  { code: "GB", label: "United Kingdom" },
-  { code: "CA", label: "Canada" },
-  { code: "AU", label: "Australia" },
-];
-
 function ProviderLogo({
   provider,
   link,
@@ -1513,28 +1505,24 @@ export default function MoviesPage() {
   const activeSuggestion = stream[suggestionIndex] ?? stream[0];
   const canFetchMore = page > 0 && page < totalPages;
 
-  // Streaming availability (TMDB/JustWatch) for the movie currently shown,
-  // cached per movie + region.
-  const [watchRegion, setWatchRegion] = useState("IN");
-  const [providersByKey, setProvidersByKey] = useState<Record<string, ProviderInfo>>({});
+  // Streaming availability (TMDB/JustWatch) in India for the movie shown.
+  const [providersById, setProvidersById] = useState<Record<string, ProviderInfo>>({});
   const activeId = activeSuggestion?.id;
   const isApiMovie = Boolean(activeId && !activeId.startsWith("curated:"));
-  const providerKey = isApiMovie ? `${activeId}|${watchRegion}` : "";
   useEffect(() => {
-    if (!providerKey) return;
-    if (providersByKey[providerKey]) return;
-    const [id, region] = providerKey.split("|");
+    if (!activeId || !isApiMovie) return;
+    if (providersById[activeId]) return;
     let aborted = false;
-    fetch(`/api/movies/providers?id=${id}&region=${region}`)
+    fetch(`/api/movies/providers?id=${activeId}&region=IN`)
       .then((res) => res.json())
       .then((data) => {
         if (aborted) return;
-        setProvidersByKey((prev) =>
-          prev[providerKey]
+        setProvidersById((prev) =>
+          prev[activeId]
             ? prev
             : {
                 ...prev,
-                [providerKey]: {
+                [activeId]: {
                   providers: data.providers || [],
                   rentBuy: data.rentBuy || [],
                   link: data.link || null,
@@ -1547,10 +1535,8 @@ export default function MoviesPage() {
       aborted = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [providerKey]);
-  const activeProviders = providerKey ? providersByKey[providerKey] : undefined;
-  const watchRegionLabel =
-    WATCH_REGIONS.find((r) => r.code === watchRegion)?.label ?? watchRegion;
+  }, [activeId]);
+  const activeProviders = isApiMovie && activeId ? providersById[activeId] : undefined;
 
   // Prefetch more as the user nears the end so "Next" stays seamless.
   useEffect(() => {
@@ -1818,22 +1804,9 @@ export default function MoviesPage() {
                               </>
                             ) : (
                               <span className={styles.watchHint}>
-                                Not on streaming in {watchRegionLabel}
+                                Not on streaming in India
                               </span>
                             )}
-
-                            <select
-                              className={styles.watchRegion}
-                              value={watchRegion}
-                              onChange={(event) => setWatchRegion(event.target.value)}
-                              aria-label="Streaming region"
-                            >
-                              {WATCH_REGIONS.map((region) => (
-                                <option key={region.code} value={region.code}>
-                                  {region.label}
-                                </option>
-                              ))}
-                            </select>
                           </div>
                         )}
                       </div>

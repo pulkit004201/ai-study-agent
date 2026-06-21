@@ -482,17 +482,6 @@
   line-height: 0;
 }
 
-.watchRegion {
-  margin-left: auto;
-  padding: 5px 8px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--foreground);
-  font: inherit;
-  font-size: 12px;
-  cursor: pointer;
-}
 
 .watchLogo {
   display: block;
