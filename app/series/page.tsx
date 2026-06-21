@@ -5,8 +5,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 // Reuse the Playground (movies) styles — the layout is identical.
 import styles from "../movies/page.module.css";
 
-const SEEN_STORAGE_KEY = "seriesSeenIds";
-
 function toDisplay(s: ApiSuggestion): DisplaySuggestion {
   return {
     id: s.id,
@@ -653,40 +651,18 @@ export default function SeriesPage() {
   const recommendationsRef = useRef(recommendations);
   recommendationsRef.current = recommendations;
 
-  // Load the persisted "seen" set once on mount.
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(SEEN_STORAGE_KEY);
-      if (raw) seenRef.current = new Set(JSON.parse(raw));
-    } catch {
-      // ignore malformed storage
-    }
-  }, []);
-
-  const persistSeen = useCallback(() => {
-    try {
-      localStorage.setItem(
-        SEEN_STORAGE_KEY,
-        JSON.stringify([...seenRef.current])
-      );
-    } catch {
-      // storage may be unavailable; in-memory dedup still holds for the session
-    }
-  }, []);
-
   // Append only unseen suggestions, marking them seen so they can't return.
-  const addUnseen = useCallback(
-    (incoming: DisplaySuggestion[]) => {
-      const fresh = incoming.filter((s) => !seenRef.current.has(s.id));
-      fresh.forEach((s) => seenRef.current.add(s.id));
-      if (fresh.length) {
-        persistSeen();
-        setStream((prev) => [...prev, ...fresh]);
-      }
-      return fresh.length;
-    },
-    [persistSeen]
-  );
+  // The "seen" set is reset on every filter change (see the load effect below),
+  // so it only de-dupes while paginating within a single result run — it never
+  // permanently hides a title, which would otherwise dead-end heavy browsing.
+  const addUnseen = useCallback((incoming: DisplaySuggestion[]) => {
+    const fresh = incoming.filter((s) => !seenRef.current.has(s.id));
+    fresh.forEach((s) => seenRef.current.add(s.id));
+    if (fresh.length) {
+      setStream((prev) => [...prev, ...fresh]);
+    }
+    return fresh.length;
+  }, []);
 
   const curatedFallback = useCallback((): DisplaySuggestion[] => {
     return recommendationsRef.current.map((r) => ({
@@ -712,6 +688,9 @@ export default function SeriesPage() {
     setLoading(true);
     setSuggestionIndex(0);
     setStream([]);
+    // Start each filter run with a clean slate so every selection surfaces the
+    // full matching pool (dedup only applies while paginating this run).
+    seenRef.current = new Set();
     const params = new URLSearchParams({
       region: lang,
       ...answers,
@@ -865,7 +844,6 @@ export default function SeriesPage() {
     setSuggestionIndex(0);
     // Forget history so a fresh run can surface everything again.
     seenRef.current = new Set();
-    persistSeen();
     setStream([]);
     setPage(0);
     setTotalPages(0);
