@@ -444,6 +444,43 @@
   gap: 8px;
 }
 
+.watchRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.watchLabel {
+  color: var(--text-soft);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.watchProvider {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: #fff;
+  line-height: 0;
+}
+
+.watchLogo {
+  display: block;
+  object-fit: cover;
+}
+
+.watchHint {
+  color: var(--text-soft);
+  font-size: 12.5px;
+}
+
 .tag {
   padding: 6px 9px;
   border-radius: 999px;

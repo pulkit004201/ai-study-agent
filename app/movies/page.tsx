@@ -45,6 +45,13 @@ type ApiSuggestion = {
 
 type RatingTab = "all" | "low" | "mid" | "high";
 
+type WatchProvider = { name: string; logoUrl: string };
+type ProviderInfo = {
+  providers: WatchProvider[];
+  rentBuy: WatchProvider[];
+  link: string | null;
+};
+
 const RATING_TABS: { id: RatingTab; label: string }[] = [
   { id: "all", label: "All" },
   { id: "low", label: "< 5" },
@@ -1464,6 +1471,39 @@ export default function MoviesPage() {
   const activeSuggestion = stream[suggestionIndex] ?? stream[0];
   const canFetchMore = page > 0 && page < totalPages;
 
+  // Streaming availability (TMDB/JustWatch) for the movie currently shown.
+  const [providersById, setProvidersById] = useState<Record<string, ProviderInfo>>({});
+  const activeId = activeSuggestion?.id;
+  useEffect(() => {
+    if (!activeId || activeId.startsWith("curated:")) return;
+    if (providersById[activeId]) return;
+    let aborted = false;
+    fetch(`/api/movies/providers?id=${activeId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (aborted) return;
+        setProvidersById((prev) =>
+          prev[activeId]
+            ? prev
+            : {
+                ...prev,
+                [activeId]: {
+                  providers: data.providers || [],
+                  rentBuy: data.rentBuy || [],
+                  link: data.link || null,
+                },
+              }
+        );
+      })
+      .catch(() => {});
+    return () => {
+      aborted = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeId]);
+  const activeProviders =
+    activeId && !activeId.startsWith("curated:") ? providersById[activeId] : undefined;
+
   // Prefetch more as the user nears the end so "Next" stays seamless.
   useEffect(() => {
     if (allAnswered && suggestionIndex >= stream.length - 2 && canFetchMore && !loading) {
@@ -1701,6 +1741,54 @@ export default function MoviesPage() {
                             </span>
                           ))}
                         </div>
+
+                        {activeId && !activeId.startsWith("curated:") && (
+                          <div className={styles.watchRow}>
+                            <span className={styles.watchLabel}>Watch on</span>
+                            {activeProviders === undefined ? (
+                              <span className={styles.watchHint}>Checking…</span>
+                            ) : activeProviders.providers.length > 0 ? (
+                              activeProviders.providers.map((provider) => (
+                                <span
+                                  key={provider.name}
+                                  className={styles.watchProvider}
+                                  title={provider.name}
+                                >
+                                  <Image
+                                    src={provider.logoUrl}
+                                    alt={provider.name}
+                                    width={26}
+                                    height={26}
+                                    className={styles.watchLogo}
+                                  />
+                                </span>
+                              ))
+                            ) : activeProviders.rentBuy.length > 0 ? (
+                              <>
+                                {activeProviders.rentBuy.slice(0, 4).map((provider) => (
+                                  <span
+                                    key={provider.name}
+                                    className={styles.watchProvider}
+                                    title={`${provider.name} (rent/buy)`}
+                                  >
+                                    <Image
+                                      src={provider.logoUrl}
+                                      alt={provider.name}
+                                      width={26}
+                                      height={26}
+                                      className={styles.watchLogo}
+                                    />
+                                  </span>
+                                ))}
+                                <span className={styles.watchHint}>rent / buy</span>
+                              </>
+                            ) : (
+                              <span className={styles.watchHint}>
+                                Not on streaming in India
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </article>
 
