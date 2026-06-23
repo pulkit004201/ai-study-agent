@@ -612,6 +612,8 @@ export default function SeriesPage() {
   const [filters, setFilters] = useState<Record<AnswerKey, string>>(getInitialFilters);
   const [ratingTab, setRatingTab] = useState<RatingTab>("all");
   const [indiaOnly, setIndiaOnly] = useState(true);
+  // Mobile-only: the dropdown filters collapse behind a "Filters" button.
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const [items, setItems] = useState<CardItem[]>([]);
   const [page, setPage] = useState(0);
@@ -783,26 +785,55 @@ export default function SeriesPage() {
 
         {/* Sticky filter bar */}
         <section className={styles.filterBar} aria-label="Filters">
-          {FILTERS.map((f) => (
-            <div key={f.key} className={styles.filterGroup}>
-              <label className={styles.filterLabel} htmlFor={`filter-${f.key}`}>
-                {f.label}
-              </label>
-              <select
-                id={`filter-${f.key}`}
-                className={styles.select}
-                value={filters[f.key]}
-                onChange={(e) => setFilter(f.key, e.target.value)}
-              >
-                <option value="">Any</option>
-                {f.options.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </select>
-            </div>
-          ))}
+          {/* Mobile-only toggle to expand/collapse the dropdown filters. */}
+          <button
+            type="button"
+            className={styles.filtersToggle}
+            aria-expanded={filtersOpen}
+            onClick={() => setFiltersOpen((open) => !open)}
+          >
+            <span>
+              Filters
+              {FILTERS.filter((f) => filters[f.key]).length > 0
+                ? ` · ${FILTERS.filter((f) => filters[f.key]).length}`
+                : ""}
+            </span>
+            <span
+              className={`${styles.filtersToggleCaret} ${
+                filtersOpen ? styles.filtersToggleCaretOpen : ""
+              }`}
+              aria-hidden="true"
+            >
+              ▾
+            </span>
+          </button>
+
+          <div
+            className={`${styles.filterFields} ${
+              filtersOpen ? styles.filterFieldsOpen : ""
+            }`}
+          >
+            {FILTERS.map((f) => (
+              <div key={f.key} className={styles.filterGroup}>
+                <label className={styles.filterLabel} htmlFor={`filter-${f.key}`}>
+                  {f.label}
+                </label>
+                <select
+                  id={`filter-${f.key}`}
+                  className={styles.select}
+                  value={filters[f.key]}
+                  onChange={(e) => setFilter(f.key, e.target.value)}
+                >
+                  <option value="">Any</option>
+                  {f.options.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ))}
+          </div>
 
           <div className={styles.spacer} />
 
