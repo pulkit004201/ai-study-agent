@@ -2,33 +2,29 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-// Reuse the Playground (movies) styles — the layout is identical.
-import styles from "../movies/page.module.css";
+import styles from "./series.module.css";
 
-function toDisplay(s: ApiSuggestion): DisplaySuggestion {
-  return {
-    id: s.id,
-    title: s.title,
-    year: s.year,
-    posterUrl: s.posterUrl,
-    reason: s.reason,
-    tags: s.tags,
-    metaLabel: [s.year, s.rating ? `⭐ ${s.rating.toFixed(1)}` : null]
-      .filter(Boolean)
-      .join(" · "),
-  };
-}
+type RatingTab = "all" | "low" | "mid" | "high";
 
-// Unified shape rendered in the results panel — fed by either the live TMDB
-// API or the curated fallback list.
-type DisplaySuggestion = {
+const RATING_TABS: { id: RatingTab; label: string }[] = [
+  { id: "all", label: "All" },
+  { id: "low", label: "< 5" },
+  { id: "mid", label: "5 – 7" },
+  { id: "high", label: "> 7" },
+];
+
+type Lang = "English" | "Hindi";
+type AnswerKey = "mood" | "pace" | "company" | "era";
+
+// Unified grid item, fed by either the live TMDB API or the curated fallback.
+type CardItem = {
   id: string;
   title: string;
   year: number | null;
   posterUrl: string;
-  reason: string;
+  rating: number | null;
   tags: string[];
-  metaLabel: string;
+  overview: string;
 };
 
 type ApiSuggestion = {
@@ -41,26 +37,13 @@ type ApiSuggestion = {
   rating: number | null;
 };
 
-type RatingTab = "all" | "low" | "mid" | "high";
-
 type WatchProvider = { name: string; logoUrl: string };
 type ProviderInfo = {
   providers: WatchProvider[];
   rentBuy: WatchProvider[];
   link: string | null;
   seasons: number | null;
-  episodes: number | null;
 };
-
-const RATING_TABS: { id: RatingTab; label: string }[] = [
-  { id: "all", label: "All" },
-  { id: "low", label: "< 5" },
-  { id: "mid", label: "5 – 7" },
-  { id: "high", label: "> 7" },
-];
-
-type Lang = "English" | "Hindi";
-type AnswerKey = "mood" | "pace" | "company" | "era";
 
 type Series = {
   title: string;
@@ -75,36 +58,17 @@ type Series = {
   posterUrl: string;
 };
 
-const QUESTIONS: Array<{
-  key: AnswerKey;
-  prompt: string;
-  options: string[];
-}> = [
-  {
-    key: "mood",
-    prompt: "What kind of mood should the series match?",
-    options: ["Feel-good", "Thrilling", "Emotional", "Thought-provoking"],
-  },
-  {
-    key: "pace",
-    prompt: "What pace sounds right?",
-    options: ["Easy watch", "Fast and gripping", "Slow burn", "Big spectacle"],
-  },
-  {
-    key: "company",
-    prompt: "Who are you watching with?",
-    options: ["Solo", "Friends", "Family", "Date night"],
-  },
-  {
-    key: "era",
-    prompt: "Pick the release style you prefer.",
-    options: ["Recent", "Modern classic", "All-time classic", "Hidden gem"],
-  },
+// Filter definitions — the old guided questions, now an always-visible bar.
+const FILTERS: Array<{ key: AnswerKey; label: string; options: string[] }> = [
+  { key: "mood", label: "Mood", options: ["Feel-good", "Thrilling", "Emotional", "Thought-provoking"] },
+  { key: "pace", label: "Pace", options: ["Easy watch", "Fast and gripping", "Slow burn", "Big spectacle"] },
+  { key: "company", label: "Watching with", options: ["Solo", "Friends", "Family", "Date night"] },
+  { key: "era", label: "Release", options: ["Recent", "Modern classic", "All-time classic", "Hidden gem"] },
 ];
 
 // Curated fallback used only when the TMDB API is unavailable. Posters are
-// intentionally left blank so the page renders a clean title card rather than a
-// broken image; the live API supplies real artwork.
+// intentionally blank so the card renders a clean title card; the live API
+// supplies real artwork.
 const SERIES: Series[] = [
   // ---------------- English ----------------
   {
@@ -471,16 +435,11 @@ const SERIES: Series[] = [
   },
 ];
 
-function getInitialAnswers(): Record<AnswerKey, string> {
-  return {
-    mood: "",
-    pace: "",
-    company: "",
-    era: "",
-  };
+function getInitialFilters(): Record<AnswerKey, string> {
+  return { mood: "", pace: "", company: "", era: "" };
 }
 
-// "Recent" is defined strictly by first-air year so older shows can never count.
+// "Recent" is defined strictly by first-air year so older shows never count.
 const RECENT_FROM_YEAR = 2023;
 
 function seriesMatches(series: Series, key: AnswerKey, value: string) {
@@ -490,41 +449,28 @@ function seriesMatches(series: Series, key: AnswerKey, value: string) {
   return series[key].includes(value);
 }
 
-// How many of the answered questions this series matches (integer, for display).
-function matchCount(series: Series, answers: Record<AnswerKey, string>) {
-  return QUESTIONS.reduce((count, question) => {
-    const value = answers[question.key];
-    if (!value) return count;
-    return seriesMatches(series, question.key, value) ? count + 1 : count;
-  }, 0);
-}
-
-// Ranking score that rewards specificity: a match counts for less when the
-// series is tagged with many values in that category, so broadly-tagged shows
-// stop dominating every result set.
-function rankScore(series: Series, answers: Record<AnswerKey, string>) {
-  return QUESTIONS.reduce((score, question) => {
-    const value = answers[question.key];
+// Specificity-weighted score used to order the curated fallback.
+function rankScore(series: Series, filters: Record<AnswerKey, string>) {
+  return FILTERS.reduce((score, f) => {
+    const value = filters[f.key];
     if (!value) return score;
-    const options = series[question.key];
-    return seriesMatches(series, question.key, value)
-      ? score + 1 / options.length
-      : score;
+    return seriesMatches(series, f.key, value) ? score + 1 / series[f.key].length : score;
   }, 0);
 }
 
-// Stable hash used to rotate tied shows based on the current answer set, so
-// changing a filter surfaces a different mix instead of the same titles.
-function varietyHash(input: string) {
-  let hash = 2166136261;
-  for (let i = 0; i < input.length; i += 1) {
-    hash ^= input.charCodeAt(i);
-    hash = Math.imul(hash, 16777619);
-  }
-  return hash >>> 0;
+function apiToCard(s: ApiSuggestion): CardItem {
+  return {
+    id: s.id,
+    title: s.title,
+    year: s.year,
+    posterUrl: s.posterUrl,
+    rating: s.rating,
+    tags: s.tags,
+    overview: s.reason,
+  };
 }
 
-function SeriesPoster({
+function CardPoster({
   posterUrl,
   title,
   year,
@@ -534,51 +480,36 @@ function SeriesPoster({
   year: number | null;
 }) {
   const [failed, setFailed] = useState(false);
-
   if (!posterUrl || failed) {
     return (
-      <div className={styles.poster}>
-        <div className={styles.posterFallback}>
-          <span className={styles.posterFallbackTitle}>{title}</span>
-          {year != null && <span className={styles.posterFallbackYear}>{year}</span>}
-        </div>
+      <div className={styles.posterFallback}>
+        <span className={styles.posterFallbackTitle}>{title}</span>
+        {year != null && <span className={styles.posterFallbackYear}>{year}</span>}
       </div>
     );
   }
-
   return (
-    <div className={styles.poster}>
-      <Image
-        src={posterUrl}
-        alt={`${title} poster`}
-        fill
-        sizes="(max-width: 560px) 100vw, 260px"
-        className={styles.posterImage}
-        onError={() => setFailed(true)}
-      />
-    </div>
+    <Image
+      src={posterUrl}
+      alt={`${title} poster`}
+      fill
+      sizes="(max-width: 640px) 45vw, 200px"
+      className={styles.cardPosterImg}
+      onError={() => setFailed(true)}
+    />
   );
 }
 
-// A streaming-platform logo. Links out to the title's watch page (JustWatch via
-// TMDB) when a link is available, otherwise renders a non-clickable badge.
-// TMDB only provides one watch link per title, not per-platform deep links.
-function ProviderBadge({
-  provider,
-  link,
-  title,
-}: {
-  provider: WatchProvider;
-  link: string | null;
-  title?: string;
-}) {
+// A streaming-platform logo. Links to the title's watch page (JustWatch via
+// TMDB) when available; TMDB exposes one watch link per title.
+function ProviderLink({ provider, link }: { provider: WatchProvider; link: string | null }) {
   const logo = (
     <Image
       src={provider.logoUrl}
       alt={provider.name}
-      width={26}
-      height={26}
-      className={styles.watchLogo}
+      width={24}
+      height={24}
+      className={styles.providerLogo}
     />
   );
   if (link) {
@@ -587,169 +518,217 @@ function ProviderBadge({
         href={link}
         target="_blank"
         rel="noopener noreferrer"
-        className={styles.watchProvider}
-        title={title ?? `${provider.name} — open watch page`}
+        className={styles.providerLink}
+        title={`${provider.name} — open watch page`}
       >
         {logo}
       </a>
     );
   }
   return (
-    <span className={styles.watchProvider} title={title ?? provider.name}>
+    <span className={styles.providerLink} title={provider.name}>
       {logo}
     </span>
   );
 }
 
+// One grid card. Lazily fetches its own season count + watch providers (the
+// discover list endpoint carries neither).
+function SeriesCard({ item }: { item: CardItem }) {
+  const [info, setInfo] = useState<ProviderInfo | null>(null);
+  const isCurated = item.id.startsWith("curated:");
+
+  useEffect(() => {
+    if (isCurated) return;
+    let aborted = false;
+    fetch(`/api/series/providers?id=${item.id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (aborted) return;
+        setInfo({
+          providers: data.providers || [],
+          rentBuy: data.rentBuy || [],
+          link: data.link || null,
+          seasons: typeof data.seasons === "number" ? data.seasons : null,
+        });
+      })
+      .catch(() => {});
+    return () => {
+      aborted = true;
+    };
+  }, [item.id, isCurated]);
+
+  const meta = [
+    item.year,
+    info?.seasons ? `${info.seasons} season${info.seasons > 1 ? "s" : ""}` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  const watchProviders =
+    info && info.providers.length > 0
+      ? info.providers
+      : info && info.rentBuy.length > 0
+        ? info.rentBuy.slice(0, 4)
+        : [];
+
+  return (
+    <article className={styles.card}>
+      <div className={styles.cardPoster}>
+        <CardPoster posterUrl={item.posterUrl} title={item.title} year={item.year} />
+        {item.rating != null && item.rating > 0 && (
+          <span className={styles.ratingPill}>⭐ {item.rating.toFixed(1)}</span>
+        )}
+      </div>
+      <div className={styles.cardBody}>
+        <h3 className={styles.cardTitle}>{item.title}</h3>
+        {meta && <span className={styles.cardMeta}>{meta}</span>}
+        {item.tags.length > 0 && (
+          <div className={styles.cardTags}>
+            {item.tags.slice(0, 2).map((tag) => (
+              <span key={tag} className={styles.cardTag}>
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+        {!isCurated && watchProviders.length > 0 && (
+          <div className={styles.cardWatch}>
+            {watchProviders.map((p) => (
+              <ProviderLink key={p.name} provider={p} link={info?.link ?? null} />
+            ))}
+            {info && info.providers.length === 0 && info.rentBuy.length > 0 && (
+              <span className={styles.watchHint}>rent / buy</span>
+            )}
+          </div>
+        )}
+      </div>
+    </article>
+  );
+}
+
 export default function SeriesPage() {
   const [lang, setLang] = useState<Lang>("English");
-  const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState<Record<AnswerKey, string>>(getInitialAnswers);
-  const [showResults, setShowResults] = useState(false);
-  const [suggestionIndex, setSuggestionIndex] = useState(0);
+  const [filters, setFilters] = useState<Record<AnswerKey, string>>(getInitialFilters);
   const [ratingTab, setRatingTab] = useState<RatingTab>("all");
   const [indiaOnly, setIndiaOnly] = useState(true);
 
-  const currentQuestion = QUESTIONS[step];
-  const answeredCount = QUESTIONS.filter((question) => answers[question.key]).length;
-  const progressPct = Math.round((answeredCount / QUESTIONS.length) * 100);
-
-  const recommendations = useMemo(() => {
-    const answersKey = QUESTIONS.map((question) => answers[question.key]).join("|");
-    return SERIES.filter(
-      (series) =>
-        series.lang === lang &&
-        // Release style is a hard filter: e.g. "Recent" restricts the pool to
-        // 2023+ shows so it never surfaces older ones.
-        (!answers.era || seriesMatches(series, "era", answers.era))
-    )
-      .map((series) => ({
-        series,
-        matches: matchCount(series, answers),
-        score: rankScore(series, answers),
-        order: varietyHash(`${series.title}#${answersKey}`),
-      }))
-      .sort((a, b) => {
-        if (b.score !== a.score) return b.score - a.score;
-        if (a.order !== b.order) return a.order - b.order;
-        return b.series.year - a.series.year;
-      })
-      .slice(0, 6);
-  }, [answers, lang]);
-
-  const allAnswered = answeredCount === QUESTIONS.length;
-  const answersKey = QUESTIONS.map((question) => answers[question.key]).join("|");
-  const filterKey = `${lang}|${answersKey}|${ratingTab}|${indiaOnly ? "in" : "all"}`;
-
-  // De-duped, paginating stream of suggestions. `seenIds` persists across
-  // sessions so a series never repeats in any form or order.
-  const [stream, setStream] = useState<DisplaySuggestion[]>([]);
+  const [items, setItems] = useState<CardItem[]>([]);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [source, setSource] = useState<"tmdb" | "curated" | "">("");
   const seenRef = useRef<Set<string>>(new Set());
-  const recommendationsRef = useRef(recommendations);
-  recommendationsRef.current = recommendations;
 
-  // Append only unseen suggestions, marking them seen so they can't return.
-  // The "seen" set is reset on every filter change (see the load effect below),
-  // so it only de-dupes while paginating within a single result run — it never
-  // permanently hides a title, which would otherwise dead-end heavy browsing.
-  const addUnseen = useCallback((incoming: DisplaySuggestion[]) => {
+  const filterKey = useMemo(
+    () =>
+      [lang, filters.mood, filters.pace, filters.company, filters.era, ratingTab, indiaOnly]
+        .join("|"),
+    [lang, filters, ratingTab, indiaOnly]
+  );
+
+  const curatedItems = useCallback((): CardItem[] => {
+    return SERIES.filter(
+      (s) => s.lang === lang && (!filters.era || seriesMatches(s, "era", filters.era))
+    )
+      .sort((a, b) => rankScore(b, filters) - rankScore(a, filters) || b.year - a.year)
+      .map((s) => ({
+        id: `curated:${s.title}`,
+        title: s.title,
+        year: s.year,
+        posterUrl: s.posterUrl,
+        rating: null,
+        tags: s.tags,
+        overview: s.reason,
+      }));
+  }, [lang, filters]);
+
+  // Append only unseen items (dedup is reset per filter run, below).
+  const addUnseen = useCallback((incoming: CardItem[]) => {
     const fresh = incoming.filter((s) => !seenRef.current.has(s.id));
     fresh.forEach((s) => seenRef.current.add(s.id));
-    if (fresh.length) {
-      setStream((prev) => [...prev, ...fresh]);
-    }
+    if (fresh.length) setItems((prev) => [...prev, ...fresh]);
     return fresh.length;
   }, []);
 
-  const curatedFallback = useCallback((): DisplaySuggestion[] => {
-    return recommendationsRef.current.map((r) => ({
-      id: `curated:${r.series.title}`,
-      title: r.series.title,
-      year: r.series.year,
-      posterUrl: r.series.posterUrl,
-      reason: r.series.reason,
-      tags: r.series.tags,
-      metaLabel: `${r.series.year} · ${r.matches}/${QUESTIONS.length} match`,
-    }));
-  }, []);
+  const buildParams = useCallback(
+    (pageNum: number) =>
+      new URLSearchParams({
+        region: lang,
+        mood: filters.mood,
+        pace: filters.pace,
+        company: filters.company,
+        era: filters.era,
+        rating: ratingTab,
+        india: indiaOnly ? "1" : "0",
+        page: String(pageNum),
+      }),
+    [lang, filters, ratingTab, indiaOnly]
+  );
 
-  // Reset and load the first page whenever the filters change post-completion.
+  // Reset and load page 1 whenever any filter changes.
   useEffect(() => {
-    if (!allAnswered) {
-      setStream([]);
-      setPage(0);
-      setTotalPages(0);
-      return;
-    }
     const controller = new AbortController();
     setLoading(true);
-    setSuggestionIndex(0);
-    setStream([]);
-    // Start each filter run with a clean slate so every selection surfaces the
-    // full matching pool (dedup only applies while paginating this run).
+    setItems([]);
+    setPage(0);
+    setTotalPages(0);
+    setTotal(0);
+    // Fresh dedup slate so each selection surfaces its full pool.
     seenRef.current = new Set();
-    const params = new URLSearchParams({
-      region: lang,
-      ...answers,
-      rating: ratingTab,
-      india: indiaOnly ? "1" : "0",
-      page: "1",
-    });
-    fetch(`/api/series/discover?${params.toString()}`, { signal: controller.signal })
+
+    fetch(`/api/series/discover?${buildParams(1).toString()}`, { signal: controller.signal })
       .then((res) => res.json())
       .then((data) => {
         if (data.source === "tmdb" && Array.isArray(data.results)) {
+          setSource("tmdb");
           setTotalPages(data.totalPages || 1);
+          setTotal(data.total || data.results.length);
           setPage(1);
-          addUnseen(data.results.map(toDisplay));
+          addUnseen((data.results as ApiSuggestion[]).map(apiToCard));
         } else {
-          // API unavailable — fall back to the curated list (also de-duped).
+          const curated = curatedItems();
+          setSource("curated");
           setTotalPages(1);
+          setTotal(curated.length);
           setPage(1);
-          addUnseen(curatedFallback());
+          addUnseen(curated);
         }
       })
       .catch(() => {
-        if (!controller.signal.aborted) {
-          setTotalPages(1);
-          setPage(1);
-          addUnseen(curatedFallback());
-        }
+        if (controller.signal.aborted) return;
+        const curated = curatedItems();
+        setSource("curated");
+        setTotalPages(1);
+        setTotal(curated.length);
+        setPage(1);
+        addUnseen(curated);
       })
       .finally(() => {
         if (!controller.signal.aborted) setLoading(false);
       });
     return () => controller.abort();
-    // filterKey captures lang + answers; deliberately not re-running on the
-    // helper identities.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allAnswered, filterKey]);
+  }, [filterKey]);
 
-  // Fetch successive TMDB pages, skipping pages that are fully "seen", until we
-  // find fresh shows or run out of pages.
-  const fetchMore = useCallback(async () => {
-    if (loading || page === 0 || page >= totalPages) return;
+  const canLoadMore = source === "tmdb" && page > 0 && page < totalPages;
+
+  // Fetch successive TMDB pages, skipping fully-seen pages, until fresh items
+  // appear or pages run out.
+  const loadMore = useCallback(async () => {
+    if (loading || !canLoadMore) return;
     setLoading(true);
     try {
-      let nextPage = page;
-      while (nextPage < totalPages) {
-        nextPage += 1;
-        const params = new URLSearchParams({
-          region: lang,
-          ...answers,
-          rating: ratingTab,
-          india: indiaOnly ? "1" : "0",
-          page: String(nextPage),
-        });
-        const data = await fetch(`/api/series/discover?${params.toString()}`).then(
+      let next = page;
+      while (next < totalPages) {
+        next += 1;
+        const data = await fetch(`/api/series/discover?${buildParams(next).toString()}`).then(
           (res) => res.json()
         );
-        setPage(nextPage);
+        setPage(next);
         if (data.source === "tmdb" && Array.isArray(data.results)) {
-          const added = addUnseen(data.results.map(toDisplay));
+          const added = addUnseen((data.results as ApiSuggestion[]).map(apiToCard));
           if (added > 0) break;
         } else {
           break;
@@ -758,376 +737,150 @@ export default function SeriesPage() {
     } finally {
       setLoading(false);
     }
-  }, [loading, page, totalPages, lang, answers, ratingTab, indiaOnly, addUnseen]);
+  }, [loading, canLoadMore, page, totalPages, buildParams, addUnseen]);
 
-  const activeSuggestion = stream[suggestionIndex] ?? stream[0];
-  const canFetchMore = page > 0 && page < totalPages;
-
-  // Streaming availability (TMDB/JustWatch) for the series currently shown.
-  const [providersById, setProvidersById] = useState<Record<string, ProviderInfo>>({});
-  const activeId = activeSuggestion?.id;
-  useEffect(() => {
-    if (!activeId || activeId.startsWith("curated:")) return;
-    if (providersById[activeId]) return;
-    let aborted = false;
-    fetch(`/api/series/providers?id=${activeId}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (aborted) return;
-        setProvidersById((prev) =>
-          prev[activeId]
-            ? prev
-            : {
-                ...prev,
-                [activeId]: {
-                  providers: data.providers || [],
-                  rentBuy: data.rentBuy || [],
-                  link: data.link || null,
-                  seasons: typeof data.seasons === "number" ? data.seasons : null,
-                  episodes: typeof data.episodes === "number" ? data.episodes : null,
-                },
-              }
-        );
-      })
-      .catch(() => {});
-    return () => {
-      aborted = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeId]);
-  const activeProviders =
-    activeId && !activeId.startsWith("curated:") ? providersById[activeId] : undefined;
-
-  // Prefetch more as the user nears the end so "Next" stays seamless.
-  useEffect(() => {
-    if (allAnswered && suggestionIndex >= stream.length - 2 && canFetchMore && !loading) {
-      fetchMore();
-    }
-  }, [allAnswered, suggestionIndex, stream.length, canFetchMore, loading, fetchMore]);
-
-  function selectLang(nextLang: Lang) {
-    if (nextLang === lang) return;
-    setLang(nextLang);
-    setSuggestionIndex(0);
+  function setFilter(key: AnswerKey, value: string) {
+    setFilters((prev) => ({ ...prev, [key]: value }));
   }
 
-  function selectAnswer(value: string) {
-    const key = currentQuestion.key;
-    const nextAnswers = { ...answers, [key]: value };
-    setAnswers(nextAnswers);
-    setSuggestionIndex(0);
+  const activeFilterCount =
+    FILTERS.filter((f) => filters[f.key]).length +
+    (ratingTab !== "all" ? 1 : 0);
 
-    // Only reveal the shortlist once every question has an answer.
-    const allDone = QUESTIONS.every((question) => nextAnswers[question.key]);
-    if (allDone) {
-      setShowResults(true);
-    }
-    // Auto-advance to the next question — no manual "Next" needed.
-    if (step < QUESTIONS.length - 1) {
-      setStep((prev) => prev + 1);
-    }
-  }
-
-  function goBack() {
-    setStep((prev) => Math.max(0, prev - 1));
-  }
-
-  // Return to the questions from the results view without losing answers.
-  function editAnswers() {
-    setShowResults(false);
-  }
-
-  function restart() {
-    setAnswers(getInitialAnswers());
-    setStep(0);
-    setShowResults(false);
-    setSuggestionIndex(0);
-    // Forget history so a fresh run can surface everything again.
-    seenRef.current = new Set();
-    setStream([]);
-    setPage(0);
-    setTotalPages(0);
-  }
-
-  function showPreviousSuggestion() {
-    setSuggestionIndex((prev) => Math.max(0, prev - 1));
-  }
-
-  function showNextSuggestion() {
-    setSuggestionIndex((prev) => {
-      if (prev + 1 < stream.length) return prev + 1;
-      // At the end of the buffer: pull more pages, stay put until they arrive.
-      if (canFetchMore) fetchMore();
-      return prev;
-    });
-  }
+  const countLabel =
+    source === "curated"
+      ? `${total} curated ${total === 1 ? "pick" : "picks"}`
+      : `${total.toLocaleString()} ${total === 1 ? "match" : "matches"}`;
 
   return (
     <main className={styles.page}>
       <div className={styles.shell}>
-        <header className={styles.header}>
-          <div>
-            <p className={styles.eyebrow}>Web Series Suggestion Agent</p>
-            <h1 className={styles.title}>
-              Find a web series to <span>binge.</span>
-            </h1>
-            <p className={styles.subtitle}>
-              Answer a few quick preference checks and get a focused shortlist of
-              English or Hindi web series.
-            </p>
+        {/* Hero */}
+        <header className={styles.hero}>
+          <p className={styles.eyebrow}>Web Series Suggestion Agent</p>
+          <h1 className={styles.title}>
+            Find a web series to <span>binge.</span>
+          </h1>
+          <p className={styles.subtitle}>
+            Filter by mood, pace, company and release style to get a focused shortlist
+            of English or Hindi web series — with ratings, seasons, and where to stream.
+          </p>
+          <div className={styles.langToggle} role="tablist" aria-label="Series language">
+            {(["English", "Hindi"] as Lang[]).map((item) => (
+              <button
+                key={item}
+                type="button"
+                role="tab"
+                aria-selected={lang === item}
+                className={`${styles.langButton} ${lang === item ? styles.langButtonActive : ""}`}
+                onClick={() => setLang(item)}
+              >
+                {item}
+              </button>
+            ))}
           </div>
-
-          <aside className={styles.progressCard}>
-            <p className={styles.progressLabel}>Profile complete</p>
-            <p className={styles.progressValue}>{progressPct}%</p>
-            <div className={styles.progressTrack}>
-              <div className={styles.progressFill} style={{ width: `${progressPct}%` }} />
-            </div>
-          </aside>
         </header>
 
-        <section className={styles.grid}>
-          <div
-            className={`${styles.panel} ${styles.agentPanel} ${
-              showResults ? styles.hideOnMobile : ""
-            }`}
-          >
-            <div className={styles.panelHeader}>
-              <div>
-                <p className={styles.panelKicker}>Choose language</p>
-                <h2 className={styles.panelTitle}>{lang} picks</h2>
-              </div>
+        {/* Sticky filter bar */}
+        <section className={styles.filterBar} aria-label="Filters">
+          {FILTERS.map((f) => (
+            <div key={f.key} className={styles.filterGroup}>
+              <label className={styles.filterLabel} htmlFor={`filter-${f.key}`}>
+                {f.label}
+              </label>
+              <select
+                id={`filter-${f.key}`}
+                className={styles.select}
+                value={filters[f.key]}
+                onChange={(e) => setFilter(f.key, e.target.value)}
+              >
+                <option value="">Any</option>
+                {f.options.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
+              </select>
             </div>
+          ))}
 
-            <div className={styles.regionToggle} aria-label="Series language">
-              {(["English", "Hindi"] as Lang[]).map((item) => (
+          <div className={styles.spacer} />
+
+          <div className={styles.chipRow}>
+            <span className={styles.filterLabel}>Rating</span>
+            <div className={styles.chips}>
+              {RATING_TABS.map((tab) => (
                 <button
-                  key={item}
+                  key={tab.id}
                   type="button"
-                  className={`${styles.toggleButton} ${
-                    lang === item ? styles.toggleButtonActive : ""
-                  }`}
-                  onClick={() => selectLang(item)}
+                  className={`${styles.chip} ${ratingTab === tab.id ? styles.chipActive : ""}`}
+                  onClick={() => setRatingTab(tab.id)}
                 >
-                  {item}
+                  {tab.label}
                 </button>
               ))}
-            </div>
-
-            <div className={styles.questionBlock}>
-              <p className={styles.questionMeta}>
-                Question {step + 1} of {QUESTIONS.length}
-              </p>
-              <h3 className={styles.question}>{currentQuestion.prompt}</h3>
-
-              <div className={styles.optionsGrid}>
-                {currentQuestion.options.map((option) => {
-                  const active = answers[currentQuestion.key] === option;
-                  return (
-                    <button
-                      key={option}
-                      type="button"
-                      className={`${styles.optionButton} ${
-                        active ? styles.optionButtonActive : ""
-                      }`}
-                      onClick={() => selectAnswer(option)}
-                    >
-                      {option}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className={styles.actions}>
               <button
                 type="button"
-                className={styles.secondaryButton}
-                onClick={goBack}
-                disabled={step === 0}
+                aria-pressed={indiaOnly}
+                title="Show only titles streaming in India"
+                className={`${styles.chip} ${indiaOnly ? styles.chipActive : ""}`}
+                onClick={() => setIndiaOnly((on) => !on)}
               >
-                Back
+                📺 On streaming (IN)
               </button>
-              <p className={styles.actionHint}>
-                Pick an option to continue automatically.
+            </div>
+          </div>
+        </section>
+
+        {/* Results */}
+        <div className={styles.resultsHead}>
+          <h2 className={styles.resultsTitle}>{lang} web series</h2>
+          <span className={styles.count}>
+            {loading && items.length === 0
+              ? "Finding picks…"
+              : `${countLabel}${activeFilterCount ? ` · ${activeFilterCount} filter${activeFilterCount > 1 ? "s" : ""}` : ""}`}
+          </span>
+        </div>
+
+        {loading && items.length === 0 ? (
+          <div className={styles.grid}>
+            {Array.from({ length: 10 }).map((_, i) => (
+              <div key={i} className={styles.skeletonCard}>
+                <div className={styles.skeletonPoster} />
+              </div>
+            ))}
+          </div>
+        ) : items.length === 0 ? (
+          <div className={styles.empty}>
+            <div>
+              <p className={styles.emptyTitle}>No {lang} matches right now.</p>
+              <p className={styles.emptyText}>
+                Try a different mood, pace or release style — or turn off the
+                “On streaming (IN)” filter to widen the pool.
               </p>
             </div>
           </div>
-
-          <div
-            className={`${styles.panel} ${styles.resultsPanel} ${
-              !showResults ? styles.hideOnMobile : ""
-            }`}
-          >
-            {!allAnswered ? (
-              <div className={styles.emptyState}>
-                <div>
-                  <p className={styles.emptyTitle}>
-                    Answer all {QUESTIONS.length} questions to see your shortlist.
-                  </p>
-                  <p className={styles.emptyText}>
-                    {answeredCount} of {QUESTIONS.length} selected — the agent compares
-                    your answers with mood, pace, company, and release-style signals.
-                  </p>
-                </div>
+        ) : (
+          <>
+            <div className={styles.grid}>
+              {items.map((item) => (
+                <SeriesCard key={item.id} item={item} />
+              ))}
+            </div>
+            {canLoadMore && (
+              <div className={styles.loadMoreWrap}>
+                <button
+                  type="button"
+                  className={styles.loadMore}
+                  onClick={loadMore}
+                  disabled={loading}
+                >
+                  {loading ? "Loading…" : "Load more"}
+                </button>
               </div>
-            ) : (
-              <>
-                <div className={styles.ratingTabs} role="tablist" aria-label="Rating">
-                  <span className={styles.ratingTabsLabel}>Rating</span>
-                  {RATING_TABS.map((tab) => (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      role="tab"
-                      aria-selected={ratingTab === tab.id}
-                      className={`${styles.ratingTab} ${
-                        ratingTab === tab.id ? styles.ratingTabActive : ""
-                      }`}
-                      onClick={() => setRatingTab(tab.id)}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                  <button
-                    type="button"
-                    aria-pressed={indiaOnly}
-                    title="Show only titles streaming in India"
-                    className={`${styles.ratingTab} ${
-                      indiaOnly ? styles.ratingTabActive : ""
-                    }`}
-                    onClick={() => setIndiaOnly((on) => !on)}
-                  >
-                    📺 On streaming (IN)
-                  </button>
-                </div>
-                {stream.length === 0 ? (
-              <div className={styles.emptyState}>
-                <div>
-                  <p className={styles.emptyTitle}>
-                    {loading ? "Finding picks…" : `No new ${lang} matches right now.`}
-                  </p>
-                  <p className={styles.emptyText}>
-                    {loading
-                      ? "Matching your mood, pace, and release style."
-                      : "Try a different style, switch language, or hit Start over to reset what you've seen."}
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <>
-                {activeSuggestion && (
-                  <>
-                    <div className={styles.resultsHeader}>
-                      <h2>{lang} suggestion</h2>
-                      <span className={styles.matchBadge}>
-                        Suggestion {suggestionIndex + 1}
-                      </span>
-                    </div>
-
-                    <article className={styles.featuredMovie}>
-                      <SeriesPoster
-                        key={activeSuggestion.id}
-                        posterUrl={activeSuggestion.posterUrl}
-                        title={activeSuggestion.title}
-                        year={activeSuggestion.year}
-                      />
-
-                      <div className={styles.movieDetails}>
-                        <div className={styles.movieTopline}>
-                          <h3 className={styles.movieTitle}>{activeSuggestion.title}</h3>
-                          <span className={styles.movieMeta}>
-                            {activeSuggestion.metaLabel}
-                            {activeProviders?.seasons
-                              ? ` · ${activeProviders.seasons} season${
-                                  activeProviders.seasons > 1 ? "s" : ""
-                                }`
-                              : ""}
-                          </span>
-                        </div>
-                        <p className={styles.movieReason}>{activeSuggestion.reason}</p>
-                        <div className={styles.tagRow}>
-                          {activeSuggestion.tags.map((tag) => (
-                            <span key={tag} className={styles.tag}>
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-
-                        {activeId && !activeId.startsWith("curated:") && (
-                          <div className={styles.watchRow}>
-                            <span className={styles.watchLabel}>Watch on</span>
-                            {activeProviders === undefined ? (
-                              <span className={styles.watchHint}>Checking…</span>
-                            ) : activeProviders.providers.length > 0 ? (
-                              activeProviders.providers.map((provider) => (
-                                <ProviderBadge
-                                  key={provider.name}
-                                  provider={provider}
-                                  link={activeProviders.link}
-                                />
-                              ))
-                            ) : activeProviders.rentBuy.length > 0 ? (
-                              <>
-                                {activeProviders.rentBuy.slice(0, 4).map((provider) => (
-                                  <ProviderBadge
-                                    key={provider.name}
-                                    provider={provider}
-                                    link={activeProviders.link}
-                                    title={`${provider.name} (rent/buy) — open watch page`}
-                                  />
-                                ))}
-                                <span className={styles.watchHint}>rent / buy</span>
-                              </>
-                            ) : (
-                              <span className={styles.watchHint}>
-                                Not on streaming in India
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </article>
-
-                    <div className={styles.suggestionControls}>
-                      <button
-                        type="button"
-                        className={styles.secondaryButton}
-                        onClick={showPreviousSuggestion}
-                        disabled={suggestionIndex === 0}
-                      >
-                        Previous suggestion
-                      </button>
-                      <button
-                        type="button"
-                        className={styles.primaryButton}
-                        onClick={showNextSuggestion}
-                        disabled={
-                          suggestionIndex + 1 >= stream.length && !canFetchMore
-                        }
-                      >
-                        {loading && suggestionIndex + 1 >= stream.length
-                          ? "Loading…"
-                          : "Next suggestion"}
-                      </button>
-                    </div>
-                  </>
-                )}
-
-                <div className={styles.actions}>
-                  <button type="button" className={styles.secondaryButton} onClick={editAnswers}>
-                    ← Edit answers
-                  </button>
-                  <button type="button" className={styles.secondaryButton} onClick={restart}>
-                    Start over
-                  </button>
-                </div>
-              </>
-                )}
-              </>
             )}
-          </div>
-        </section>
+          </>
+        )}
       </div>
     </main>
   );

@@ -229,6 +229,7 @@ export async function GET(request: Request) {
       source: "tmdb",
       page: data.page ?? page,
       totalPages: Math.min(data.total_pages ?? 1, 500),
+      total: typeof data.total_results === "number" ? data.total_results : results.length,
       results,
     });
   } catch {
